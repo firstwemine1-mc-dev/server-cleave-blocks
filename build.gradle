@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.36,6.2)'
+    id 'net.minecraftforge.gradle' version '6.0.16'
 }
 
 version = "${minecraft_version}-${mod_version}"
@@ -17,9 +17,6 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(java_version)
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
 minecraft {
     mappings channel: 'official', version: minecraft_version
-    if (disable_reobf.toBoolean()) {
-      reobf = false
-    }
     copyIdeResources = true
     enableEclipsePrepareRuns = true
     enableIdeaPrepareRuns = true
@@ -64,25 +61,16 @@ dependencies {
 }
 
 repositories {
+    // NOTE: ForgeGradle 6.0.16's artifact downloader fails to resolve the Forge userdev artifact
+    // when an exclusiveContent{} repository is declared, so the Sponge repo used on 1.21.6 is gone.
     mavenCentral()
     maven {
         name = 'Forge'
-        url = 'https://maven.minecraftforge.net'
+        url = 'https://maven.minecraftforge.net/'
     }
     maven {
         name = 'Minecraft libraries'
         url = 'https://libraries.minecraft.net'
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = 'Sponge'
-                url = 'https://repo.spongepowered.org/repository/maven-public'
-            }
-        }
-        filter {
-            includeGroupAndSubgroups('org.spongepowered')
-        }
     }
 }
 
@@ -124,6 +112,9 @@ tasks.named('processResources', ProcessResources) {
 }
 
 tasks.named('jar', Jar) {
+    // Ship the GPLv3 license text inside the jar
+    from(rootProject.file('LICENSE'))
+
     manifest {
         attributes([
                 "Specification-Title"     : mod_name,
@@ -135,6 +126,8 @@ tasks.named('jar', Jar) {
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
+
+    finalizedBy 'reobfJar'
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -13,7 +13,7 @@ import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
@@ -44,8 +44,11 @@ public final class SVMM
     }
 
     @SubscribeEvent
-    public boolean onBlockBroken(BlockEvent.BreakEvent event) {
-        return veinMiner.onBlockBroken(event);
+    public void onBlockBroken(BlockEvent.BreakEvent event) {
+        // On Forge 47 an event is cancelled through setCanceled(), not by returning true.
+        if (veinMiner.onBlockBroken(event)) {
+            event.setCanceled(true);
+        }
     }
 
     @SubscribeEvent

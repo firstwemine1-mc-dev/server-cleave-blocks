@@ -33,7 +33,8 @@ public final class VeinMiner {
         BlockState blockState = event.getState();
         if (!canUseMod(player, heldItem, blockState)) return false;
 
-        ServerLevel level = player.level();
+        // On 1.20.1 ServerPlayer#level() still returns Level, so the cast is needed.
+        ServerLevel level = (ServerLevel) player.level();
         BlockPos blockPos = event.getPos();
 
         if (canTunnel(player, blockState)) {

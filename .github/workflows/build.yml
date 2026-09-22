@@ -5,10 +5,12 @@ on:
     branches:
     - main
     - release/*
+    - forge/*
   pull_request:
     branches:
     - main
     - release/*
+    - forge/*
 
 jobs:
   build:

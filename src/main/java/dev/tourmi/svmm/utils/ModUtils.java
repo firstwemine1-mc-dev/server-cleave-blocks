@@ -3,14 +3,12 @@ package dev.tourmi.svmm.utils;
 import dev.tourmi.svmm.SVMM;
 import dev.tourmi.svmm.config.SVMMConfig;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 
-import java.lang.invoke.MethodHandles;
-
 /**
- * Extract mod-related functions, to avoid breaking changes in Forge 56+
+ * Extract mod-related functions, to isolate Forge event-bus/config API differences between versions.
  */
 public final class ModUtils {
     public static void RegisterConfig(ForgeConfigSpec spec, String path) {
@@ -19,6 +17,6 @@ public final class ModUtils {
 
     public static void RegisterMod(SVMM mod) {
         RegisterConfig(SVMMConfig.SPEC, "svmm-config.toml");
-        BusGroup.DEFAULT.register(MethodHandles.lookup(), mod);
+        MinecraftForge.EVENT_BUS.register(mod);
     }
 }
