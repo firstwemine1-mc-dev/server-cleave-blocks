@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.36,6.2)'
+    id 'net.fabricmc.fabric-loom-remap' version '1.16-SNAPSHOT'
 }
 
 version = "${minecraft_version}-${mod_version}"
@@ -12,118 +12,84 @@ base {
     archivesName = mod_id
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(java_version)
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version)
+    withSourcesJar()
+}
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-minecraft {
-    mappings channel: 'official', version: minecraft_version
-    if (disable_reobf.toBoolean()) {
-      reobf = false
-    }
-    copyIdeResources = true
-    enableEclipsePrepareRuns = true
-    enableIdeaPrepareRuns = true
+
+loom {
     runs {
-        configureEach {
-            workingDirectory project.file('run')
-
-            property 'forge.logging.markers', 'REGISTRIES'
-
-            property 'forge.logging.console.level', 'debug'
-        }
-
-        client {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
+        // The mod is server-side only, but it also works on a logical server inside a client
+        // (single player / LAN), which is why fabric.mod.json declares environment "*".
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
-        }
-
-        gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
-        }
-
-        data {
-            workingDirectory project.file('run-data')
-
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+            server()
+            programArgs '--nogui'
         }
     }
-}
-
-sourceSets.main.resources {
-    srcDir 'src/generated/resources'
-}
-
-
-dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 }
 
 repositories {
     mavenCentral()
-    maven {
-        name = 'Forge'
-        url = 'https://maven.minecraftforge.net'
-    }
-    maven {
-        name = 'Minecraft libraries'
-        url = 'https://libraries.minecraft.net'
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = 'Sponge'
-                url = 'https://repo.spongepowered.org/repository/maven-public'
-            }
-        }
-        filter {
-            includeGroupAndSubgroups('org.spongepowered')
-        }
-    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    // Mojang official mappings, so the sources stay identical to the Forge branch.
+    // (Yarn would mean rewriting every vanilla name for no benefit here.)
+    mappings loom.officialMojangMappings()
+
+    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+
+    // NightConfig backs dev.tourmi.svmm.config.spec, the stand-in for ForgeConfigSpec.
+    // Forge bundles it; Fabric does not, so it is jar-in-jar'd.
+    implementation include("com.electronwill.night-config:core:${nightconfig_version}")
+    implementation include("com.electronwill.night-config:toml:${nightconfig_version}")
 }
 
 tasks.named('processResources', ProcessResources) {
     def properties = [
-            mod_id:mod_id,
-            version:version,
-            mod_version:mod_version,
-            mod_group:mod_group,
-            mod_name:mod_name,
-            mod_description:mod_description,
-            mod_credits:mod_credits,
-            mod_issue_tracker:mod_issue_tracker,
-            mod_url:mod_url,
-            mod_license:mod_license,
+            mod_id           : mod_id,
+            version          : version,
+            mod_version      : mod_version,
+            mod_group        : mod_group,
+            mod_name         : mod_name,
+            mod_description  : mod_description,
+            mod_authors      : mod_authors,
+            mod_credits      : mod_credits,
+            mod_issue_tracker: mod_issue_tracker,
+            mod_url          : mod_url,
+            mod_sources      : mod_sources,
+            mod_license      : mod_license,
 
-            author_name:author_name,
-            author_domain:author_domain,
+            author_name      : author_name,
+            author_domain    : author_domain,
 
-            minecraft_version:minecraft_version,
-            minecraft_min_version:minecraft_min_version,
-            minecraft_max_version:minecraft_max_version,
-
-            forge_version:forge_version,
-            forge_min_version:forge_min_version,
-            forge_max_version:forge_max_version,
-            forge_update_json_url:forge_update_json_url,
-            forge_displaytest_value:forge_displaytest_value,
-            forge_minecraft_side:forge_minecraft_side
+            minecraft_version: minecraft_version,
+            loader_version   : loader_version,
+            java_version     : java_version
     ]
 
     inputs.properties properties
 
-    from(sourceSets.main.resources.srcDirs) {
-        duplicatesStrategy 'include'
-        include 'META-INF/mods.toml'
+    filesMatching('fabric.mod.json') {
         expand properties
     }
 }
 
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = java_version as int
+}
+
 tasks.named('jar', Jar) {
+    // GPLv3 section 4: every copy conveyed ships the license text.
+    from('LICENSE') {
+        rename { "${it}_${mod_id}" }
+    }
+
     manifest {
         attributes([
                 "Specification-Title"     : mod_name,
@@ -135,14 +101,4 @@ tasks.named('jar', Jar) {
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
-}
-
-sourceSets.each {
-    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
-    it.output.resourcesDir = dir
-    it.java.destinationDirectory = dir
 }

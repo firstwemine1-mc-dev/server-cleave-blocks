@@ -1,7 +1,7 @@
 package dev.tourmi.svmm.config;
 
 import dev.tourmi.svmm.utils.MinecraftUtils;
-import net.minecraftforge.common.ForgeConfigSpec;
+import dev.tourmi.svmm.config.spec.ConfigSpec;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -10,27 +10,27 @@ import java.util.stream.Stream;
 public final class SVMMConfig {
     private SVMMConfig() {}
 
-    public static final ForgeConfigSpec SPEC;
+    public static final ConfigSpec SPEC;
 
-    public static final ForgeConfigSpec.BooleanValue MOD_DISABLED;
-    public static final ForgeConfigSpec.BooleanValue MOD_DEFAULT_DISABLED;
-    public static final ForgeConfigSpec.BooleanValue MOD_DEFAULT_RESTRICTED;
-    public static final ForgeConfigSpec.IntValue MAXIMUM_BLOCKS_TO_BREAK;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BLOCK_WHITELIST;
+    public static final ConfigSpec.BooleanValue MOD_DISABLED;
+    public static final ConfigSpec.BooleanValue MOD_DEFAULT_DISABLED;
+    public static final ConfigSpec.BooleanValue MOD_DEFAULT_RESTRICTED;
+    public static final ConfigSpec.IntValue MAXIMUM_BLOCKS_TO_BREAK;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> BLOCK_WHITELIST;
     private static final Supplier<List<String>> DEFAULT_BLOCK_WHITELIST = () -> List.of(
-            "#forge:ores"
+            "#c:ores"
     );
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> BLOCK_BLACKLIST;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> BLOCK_BLACKLIST;
     private static final Supplier<List<String>> DEFAULT_BLOCK_BLACKLIST = () -> List.of(
             "minecraft:ancient_debris"
     );
-    public static final ForgeConfigSpec.BooleanValue STOP_WHEN_ABOUT_TO_BREAK;
-    public static final ForgeConfigSpec.BooleanValue TELEPORT_ITEMS_TO_PLAYER;
+    public static final ConfigSpec.BooleanValue STOP_WHEN_ABOUT_TO_BREAK;
+    public static final ConfigSpec.BooleanValue TELEPORT_ITEMS_TO_PLAYER;
 
-    public static final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_DISABLED;
-    public static final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_DEFAULT_DISABLED;
-    public static final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_DEFAULT_RESTRICTED;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GIANT_VEIN_STARTER_BLOCKS;
+    public static final ConfigSpec.BooleanValue GIANT_VEIN_MINING_DISABLED;
+    public static final ConfigSpec.BooleanValue GIANT_VEIN_MINING_DEFAULT_DISABLED;
+    public static final ConfigSpec.BooleanValue GIANT_VEIN_MINING_DEFAULT_RESTRICTED;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> GIANT_VEIN_STARTER_BLOCKS;
     private static final Supplier<List<String>> DEFAULT_GIANT_VEIN_STARTER_ORE = () -> List.of(
             "minecraft:copper_ore",
             "minecraft:iron_ore",
@@ -39,7 +39,7 @@ public final class SVMMConfig {
             "minecraft:raw_copper_block",
             "minecraft:raw_iron_block"
     );
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GIANT_VEIN_WHITELIST;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> GIANT_VEIN_WHITELIST;
     private static final Supplier<List<String>> DEFAULT_GIANT_VEIN_WHITELIST = () -> List.of(
             "minecraft:copper_ore",
             "minecraft:iron_ore",
@@ -49,17 +49,17 @@ public final class SVMMConfig {
             "minecraft:raw_iron_block",
             "minecraft:tuff"
     );
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> GIANT_VEIN_BLACKLIST;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> GIANT_VEIN_BLACKLIST;
     private static final Supplier<List<String>> DEFAULT_GIANT_VEIN_BLACKLIST = List::of;
 
-    public static final ForgeConfigSpec.BooleanValue TUNNELING_DISABLED;
-    public static final ForgeConfigSpec.BooleanValue TUNNELING_DEFAULT_RESTRICTED;
-    public static final ForgeConfigSpec.IntValue TUNNELING_MAX_DIMENSION;
-    public static final ForgeConfigSpec.IntValue TUNNELING_MAX_DEPTH;
-    public static final ForgeConfigSpec.IntValue TUNNELING_MAX_BLOCKS;
-    public static final ForgeConfigSpec.BooleanValue TUNNELING_SAME_TYPE;
-    public static final ForgeConfigSpec.BooleanValue TUNNELING_LOG_USAGE;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TUNNELING_WHITELIST;
+    public static final ConfigSpec.BooleanValue TUNNELING_DISABLED;
+    public static final ConfigSpec.BooleanValue TUNNELING_DEFAULT_RESTRICTED;
+    public static final ConfigSpec.IntValue TUNNELING_MAX_DIMENSION;
+    public static final ConfigSpec.IntValue TUNNELING_MAX_DEPTH;
+    public static final ConfigSpec.IntValue TUNNELING_MAX_BLOCKS;
+    public static final ConfigSpec.BooleanValue TUNNELING_SAME_TYPE;
+    public static final ConfigSpec.BooleanValue TUNNELING_LOG_USAGE;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> TUNNELING_WHITELIST;
     private static final Supplier<List<String>> DEFAULT_TUNNELING_WHITELIST = () -> Stream.concat(Stream.of(
             "minecraft:stone",
             "minecraft:deepslate",
@@ -96,14 +96,14 @@ public final class SVMMConfig {
             "minecraft:end_stone",
             "minecraft:terracotta"
     ), MinecraftUtils.getColorNames().map(color -> "minecraft:" + color + "_terracotta")).toList();
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> TUNNELING_BLACKLIST;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> TUNNELING_BLACKLIST;
     private static final Supplier<List<String>> DEFAULT_TUNNELING_BLACKLIST = () -> List.of(
             "minecraft:obsidian");
 
-    public static final ForgeConfigSpec.BooleanValue FORCE_DISABLED;
-    public static final ForgeConfigSpec.BooleanValue FORCE_DEFAULT_RESTRICTED;
-    public static final ForgeConfigSpec.BooleanValue FORCE_LOG_USAGE;
-    public static final ForgeConfigSpec.ConfigValue<List<? extends String>> FORCE_BLACKLIST;
+    public static final ConfigSpec.BooleanValue FORCE_DISABLED;
+    public static final ConfigSpec.BooleanValue FORCE_DEFAULT_RESTRICTED;
+    public static final ConfigSpec.BooleanValue FORCE_LOG_USAGE;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> FORCE_BLACKLIST;
     private static final Supplier<List<String>> DEFAULT_FORCE_VEINMINE_BLACKLIST = () -> List.of(
             "minecraft:bedrock",
             "minecraft:reinforced_deepslate",
@@ -112,12 +112,12 @@ public final class SVMMConfig {
             "minecraft:barrel"
     );
 
-    public static final ForgeConfigSpec.BooleanValue RUNTIME_CONFIG_DISABLED;
+    public static final ConfigSpec.BooleanValue RUNTIME_CONFIG_DISABLED;
 
-    public static final ForgeConfigSpec.EnumValue<TriggerActions> TRIGGER_WHEN_DEFAULT;
+    public static final ConfigSpec.EnumValue<TriggerActions> TRIGGER_WHEN_DEFAULT;
 
     static {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ConfigSpec.Builder builder = ConfigSpec.builder();
 
         builder.push("svmm");
         MOD_DISABLED = builder.comment("Whether or not the entire mod is disabled")
@@ -130,9 +130,9 @@ public final class SVMMConfig {
         MAXIMUM_BLOCKS_TO_BREAK = builder.comment("The maximum amount of blocks the mod is allowed to break at once")
                 .defineInRange("maximum_blocks_to_break", 100, 1, Integer.MAX_VALUE);
         BLOCK_WHITELIST = builder.comment("The blocks that are allowed to be vein-mined")
-                .defineList("block_white_list", DEFAULT_BLOCK_WHITELIST.get(), String.class::isInstance);
+                .defineList("block_white_list", DEFAULT_BLOCK_WHITELIST.get());
         BLOCK_BLACKLIST = builder.comment("The blocks that will not be veinmined, even if they're part of the whitelist")
-                .defineList("block_black_list", DEFAULT_BLOCK_BLACKLIST.get(), String.class::isInstance);
+                .defineList("block_black_list", DEFAULT_BLOCK_BLACKLIST.get());
         STOP_WHEN_ABOUT_TO_BREAK = builder.comment("Whether or not to stop the vein mining when the tool is about to break")
                 .define("stop_when_about_to_break_tool", true);
         TELEPORT_ITEMS_TO_PLAYER = builder.comment("Whether or not to teleport the mined items to the player")
@@ -140,8 +140,7 @@ public final class SVMMConfig {
         RUNTIME_CONFIG_DISABLED = builder.comment("Whether or not to allow moderators to modify the config at runtime")
                 .define("runtime_config_edit_disabled", false);
         TRIGGER_WHEN_DEFAULT = builder.comment("The default condition for when the mod triggers that new players will have")
-                .worldRestart()
-                .defineEnum("trigger_when_default", TriggerActions.SHIFT_NOT_HELD);
+                .defineEnum("trigger_when_default", TriggerActions.class, TriggerActions.SHIFT_NOT_HELD);
 
         builder.push("giant-vein-mining");
         GIANT_VEIN_MINING_DISABLED = builder.comment("Whether or not giant vein mining is disabled on the server")
@@ -152,11 +151,11 @@ public final class SVMMConfig {
         GIANT_VEIN_MINING_DEFAULT_RESTRICTED = builder.comment("Whether or not giant vein mining is restricted by default for new players")
                 .define("giant_vein_mining_default_restricted", false);
         GIANT_VEIN_STARTER_BLOCKS = builder.comment("The blocks the player needs to mine before the giant vein miner is triggered")
-                .defineList("giant_vein_starter_ore", DEFAULT_GIANT_VEIN_STARTER_ORE.get(), String.class::isInstance);
+                .defineList("giant_vein_starter_ore", DEFAULT_GIANT_VEIN_STARTER_ORE.get());
         GIANT_VEIN_WHITELIST = builder.comment("Blocks the giant vein miner is allowed to mine when triggered")
-                .defineList("giant_vein_whitelist", DEFAULT_GIANT_VEIN_WHITELIST.get(), String.class::isInstance);
+                .defineList("giant_vein_whitelist", DEFAULT_GIANT_VEIN_WHITELIST.get());
         GIANT_VEIN_BLACKLIST = builder.comment("Blocks the giant vein miner won't mine when triggered")
-                .defineList("giant_vein_blacklist", DEFAULT_GIANT_VEIN_BLACKLIST.get(), String.class::isInstance);
+                .defineList("giant_vein_blacklist", DEFAULT_GIANT_VEIN_BLACKLIST.get());
         builder.pop();
 
         builder.push("tunneling");
@@ -176,9 +175,9 @@ public final class SVMMConfig {
         TUNNELING_SAME_TYPE = builder.comment("Whether or not tunneling should stop when it encounters a different block from the starting block")
                 .define("tunneling_same_type", false);
         TUNNELING_WHITELIST = builder.comment("The blocks the player is allowed to tunnel through")
-                .defineList("tunneling_whitelist", DEFAULT_TUNNELING_WHITELIST.get(), String.class::isInstance);
+                .defineList("tunneling_whitelist", DEFAULT_TUNNELING_WHITELIST.get());
         TUNNELING_BLACKLIST = builder.comment("The blocks the player is not allowed to tunnel through")
-                .defineList("tunneling_blacklist", DEFAULT_TUNNELING_BLACKLIST.get(), String.class::isInstance);
+                .defineList("tunneling_blacklist", DEFAULT_TUNNELING_BLACKLIST.get());
         builder.pop();
 
         builder.push("force-vein-mining");
@@ -189,7 +188,7 @@ public final class SVMMConfig {
         FORCE_LOG_USAGE = builder.comment("Whether or not to log to console whenever a player uses the force vein mine")
                 .define("force_logging", true);
         FORCE_BLACKLIST = builder.comment("Blocks that aren't allowed to be force vein mined")
-                        .defineList("force_blacklist", DEFAULT_FORCE_VEINMINE_BLACKLIST.get(), String.class::isInstance);
+                        .defineList("force_blacklist", DEFAULT_FORCE_VEINMINE_BLACKLIST.get());
         builder.pop();
 
         builder.pop();

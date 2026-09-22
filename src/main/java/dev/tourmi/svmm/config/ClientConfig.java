@@ -1,40 +1,31 @@
 package dev.tourmi.svmm.config;
 
-import com.electronwill.nightconfig.core.EnumGetMethod;
-import dev.tourmi.svmm.utils.PredicateUtils;
-import net.minecraftforge.common.ForgeConfigSpec;
+import dev.tourmi.svmm.config.spec.ConfigSpec;
 
-import java.util.Arrays;
-import java.util.Objects;
 import java.util.UUID;
 
 public final class ClientConfig {
-    public final ForgeConfigSpec SPEC;
+    public final ConfigSpec SPEC;
 
-    public final ForgeConfigSpec.BooleanValue MOD_DISABLED;
-    public final ForgeConfigSpec.BooleanValue MOD_RESTRICTED;
+    public final ConfigSpec.BooleanValue MOD_DISABLED;
+    public final ConfigSpec.BooleanValue MOD_RESTRICTED;
 
-    public final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_DISABLED;
-    public final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_RESTRICTED;
+    public final ConfigSpec.BooleanValue GIANT_VEIN_MINING_DISABLED;
+    public final ConfigSpec.BooleanValue GIANT_VEIN_MINING_RESTRICTED;
 
-    public final ForgeConfigSpec.BooleanValue TUNNELING_RESTRICTED;
+    public final ConfigSpec.BooleanValue TUNNELING_RESTRICTED;
 
-    public final ForgeConfigSpec.BooleanValue FORCE_RESTRICTED;
+    public final ConfigSpec.BooleanValue FORCE_RESTRICTED;
 
-    public final ForgeConfigSpec.EnumValue<TriggerActions> TRIGGER_WHEN;
+    public final ConfigSpec.EnumValue<TriggerActions> TRIGGER_WHEN;
 
     public ClientConfig(UUID playerUUID) {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ConfigSpec.Builder builder = ConfigSpec.builder();
         builder.push("svmm-player-" + playerUUID.toString());
 
         builder.push("self-config");
         TRIGGER_WHEN = builder.comment("Condition for when the mod is triggered")
-                .defineEnum(
-                        "trigger_when",
-                        SVMMConfig.TRIGGER_WHEN_DEFAULT,
-                        EnumGetMethod.NAME_IGNORECASE,
-                        o -> o instanceof TriggerActions || (o instanceof String str && Arrays.stream(TriggerActions.values()).anyMatch(t -> t.name().equalsIgnoreCase(str))),
-                        TriggerActions.class);
+                .defineEnum("trigger_when", TriggerActions.class, SVMMConfig.TRIGGER_WHEN_DEFAULT);
         builder.pop();
 
         builder.push("toggles");

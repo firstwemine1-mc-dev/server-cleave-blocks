@@ -5,10 +5,12 @@ on:
     branches:
     - main
     - release/*
+    - fabric/*
   pull_request:
     branches:
     - main
     - release/*
+    - fabric/*
 
 jobs:
   build:

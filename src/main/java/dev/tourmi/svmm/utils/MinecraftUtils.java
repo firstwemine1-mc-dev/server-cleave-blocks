@@ -3,14 +3,15 @@ package dev.tourmi.svmm.utils;
 import dev.tourmi.svmm.config.SVMMConfig;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.tags.TagKey;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,8 +56,8 @@ public final class MinecraftUtils {
         var tags = list.stream().filter((e) -> e.startsWith("#")).map(e -> e.substring(1)).toList();
         return tags
                 .stream()
-                .map((t) -> ForgeRegistries.BLOCKS.tags().createTagKey(ResourceLocation.parse(t)))
-                .anyMatch(bs::is);
+                .map((t) -> TagKey.create(Registries.BLOCK, Identifier.parse(t)))
+                .anyMatch(tag -> bs.is(tag));
     }
 
     public static void mineBlock(ServerLevel level, ServerPlayer player, BlockPos blockPos, ItemStack heldItem) {
@@ -64,7 +65,9 @@ public final class MinecraftUtils {
 
         var blockState = level.getBlockState(blockPos);
         heldItem.mineBlock(level, blockState, blockPos, player);
-        blockState.getBlock().popExperience(level, blockPos, EnchantUtils.getExp(level, heldItem, blockPos, blockState));
+        // Vanilla's playerDestroy drops the experience itself, through dropResources -> spawnAfterBreak,
+        // honouring Fortune and Silk Touch. Forge suppresses that and expects the caller to pop the
+        // experience separately, which is what the Forge branch's EnchantUtils was for.
         blockState.getBlock().playerDestroy(level, player, blockPos, blockState, level.getBlockEntity(blockPos), heldItem);
         level.removeBlock(blockPos, false);
 

@@ -1,24 +1,19 @@
 package dev.tourmi.svmm.utils;
 
-import dev.tourmi.svmm.SVMM;
-import dev.tourmi.svmm.config.SVMMConfig;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.bus.BusGroup;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ModConfig;
-
-import java.lang.invoke.MethodHandles;
+import dev.tourmi.svmm.config.spec.ConfigManager;
+import dev.tourmi.svmm.config.spec.ConfigSpec;
 
 /**
- * Extract mod-related functions, to avoid breaking changes in Forge 56+
+ * Extract mod-related functions, to keep the loader-specific plumbing in a single place.
  */
 public final class ModUtils {
-    public static void RegisterConfig(ForgeConfigSpec spec, String path) {
-        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, spec, path);
+    private ModUtils() {}
+
+    public static void RegisterConfig(ConfigSpec spec, String path) {
+        ConfigManager.register(spec, path);
     }
 
-    public static void RegisterMod(SVMM mod) {
-        RegisterConfig(SVMMConfig.SPEC, "svmm-config.toml");
-        BusGroup.DEFAULT.register(MethodHandles.lookup(), mod);
+    public static void RegisterPlayerConfig(ConfigSpec spec, String path) {
+        ConfigManager.registerForWorld(spec, path);
     }
 }

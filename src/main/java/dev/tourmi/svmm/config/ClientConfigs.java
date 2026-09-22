@@ -2,13 +2,8 @@ package dev.tourmi.svmm.config;
 
 import dev.tourmi.svmm.utils.ModUtils;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.level.storage.LevelResource;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ConfigTracker;
-import net.minecraftforge.fml.config.ModConfig;
 
-import javax.annotation.Nullable;
-import java.nio.file.Path;
+import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -27,13 +22,18 @@ public final class ClientConfigs {
         return clientConfigs.getOrDefault(uuid, null);
     }
 
+    /**
+     * Player configs belong to the world they were loaded from, so they are dropped when it unloads.
+     */
+    public static void clear() {
+        clientConfigs.clear();
+    }
+
     private static void loadOrCreateClientConfig(Entity player) {
         UUID playerUUID = player.getUUID();
         ClientConfig cfg = new ClientConfig(playerUUID);
         String configPath = "svmm-player-configs/" + playerUUID + ".toml";
-        ModUtils.RegisterConfig(cfg.SPEC, configPath);
-        Path serverConfig = player.getServer().getWorldPath(new LevelResource("serverconfig"));
-        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, serverConfig);
+        ModUtils.RegisterPlayerConfig(cfg.SPEC, configPath);
         clientConfigs.put(playerUUID, cfg);
     }
 }

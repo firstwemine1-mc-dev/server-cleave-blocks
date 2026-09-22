@@ -4,7 +4,7 @@ import dev.tourmi.svmm.config.SVMMConfig;
 import dev.tourmi.svmm.utils.CommandUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraftforge.common.ForgeConfigSpec;
+import dev.tourmi.svmm.config.spec.ConfigSpec;
 
 import java.util.function.Supplier;
 
@@ -20,7 +20,7 @@ public final class CommandPredicates {
     }
 
     public static boolean isModerator(CommandSourceStack cs) {
-        return cs.hasPermission(Commands.LEVEL_GAMEMASTERS);
+        return Commands.LEVEL_GAMEMASTERS.check(cs.permissions());
     }
 
     public static boolean isModEnabled(CommandSourceStack cs) {
@@ -59,11 +59,11 @@ public final class CommandPredicates {
         return canPlayerAccessFeature(cs, () -> CommandUtils.getSourceConfig(cs).FORCE_RESTRICTED);
     }
 
-    private static boolean isFeatureEnabled(ForgeConfigSpec.BooleanValue isDisabled) {
+    private static boolean isFeatureEnabled(ConfigSpec.BooleanValue isDisabled) {
         return !isDisabled.get();
     }
 
-    private static boolean canPlayerAccessFeature(CommandSourceStack cs, Supplier<ForgeConfigSpec.BooleanValue> isRestricted) {
+    private static boolean canPlayerAccessFeature(CommandSourceStack cs, Supplier<ConfigSpec.BooleanValue> isRestricted) {
         return isModerator(cs) || !isRestricted.get().get();
     }
 }

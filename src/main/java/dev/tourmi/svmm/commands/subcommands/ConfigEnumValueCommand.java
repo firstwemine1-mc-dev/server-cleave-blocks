@@ -7,16 +7,16 @@ import dev.tourmi.svmm.commands.ICommand;
 import dev.tourmi.svmm.utils.CommandUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraftforge.common.ForgeConfigSpec;
+import dev.tourmi.svmm.config.spec.ConfigSpec;
 
 import java.util.function.Function;
 
 public class ConfigEnumValueCommand<T extends Enum<T>> implements ICommand {
     private final String name;
     private final Class<T> clazz;
-    private final Function<CommandSourceStack, ForgeConfigSpec.EnumValue<T>> configGetter;
+    private final Function<CommandSourceStack, ConfigSpec.EnumValue<T>> configGetter;
 
-    public ConfigEnumValueCommand(String name, Class<T> clazz, Function<CommandSourceStack, ForgeConfigSpec.EnumValue<T>> configGetter) {
+    public ConfigEnumValueCommand(String name, Class<T> clazz, Function<CommandSourceStack, ConfigSpec.EnumValue<T>> configGetter) {
         this.name = name;
         this.clazz = clazz;
         this.configGetter = configGetter;
@@ -47,7 +47,7 @@ public class ConfigEnumValueCommand<T extends Enum<T>> implements ICommand {
     }
 
     private int setValue(CommandContext<CommandSourceStack> cc, T value) {
-        ForgeConfigSpec.EnumValue<T> config = this.configGetter.apply(cc.getSource());
+        ConfigSpec.EnumValue<T> config = this.configGetter.apply(cc.getSource());
         config.set(value);
         config.save();
 
