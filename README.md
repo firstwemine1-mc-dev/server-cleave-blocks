@@ -1,11 +1,12 @@
-# Server-side Vein Miner — Fabric 26.1.2
+# Server-side Vein Miner — Fabric 26.2
 
 A mod for Minecraft which allows to instantly mine ore veins
 
 > **Modified version notice (GPLv3 §5a).**
 > This branch is a modified version of [Server-side Vein Miner](https://github.com/Tourmi/mc-server-side-vein-miner)
-> by Tourmi. It was ported from the Forge 1.21.6 sources to **Fabric, Minecraft 1.21.11**, and then
-> bumped to **Fabric, Minecraft 26.1.2**, both on **2026-09-22**. Like the original, it is distributed under the GNU General Public License v3 —
+> by Tourmi. It was ported from the Forge 1.21.6 sources to **Fabric, Minecraft 1.21.11**, then
+> bumped to **Fabric, Minecraft 26.1.2** (both on **2026-09-22**), and then bumped again to
+> **Fabric, Minecraft 26.2** on **2026-09-23**. Like the original, it is distributed under the GNU General Public License v3 —
 > see [LICENSE](LICENSE). The changes are listed under [Fabric port notes](#fabric-port-notes).
 
 ## Features so far
@@ -18,7 +19,7 @@ A mod for Minecraft which allows to instantly mine ore veins
 
 ## Installing
 
-Requires **Fabric Loader 0.19.2+**, **Fabric API**, and **Java 25**, on Minecraft **26.1.2**.
+Requires **Fabric Loader 0.19.3+**, **Fabric API**, and **Java 25**, on Minecraft **26.2**.
 
 Drop the jar in the server's `mods` folder. Clients do not need it. The mod also runs on a client
 (single player, open to LAN), which is why it declares `"environment": "*"` rather than `"server"` —
@@ -74,6 +75,29 @@ accessors, `ChunkPos.asLong` becoming `ChunkPos.pack`, the `RenderType` / `Rende
 `LightTexture.pack` becoming `LightCoordsUtil.pack` — do not touch this mod: it is server-side only
 and uses none of those APIs. Fabric Loader stayed at `0.19.2` and the jar-in-jar'd NightConfig
 stayed at `3.8.1`.
+
+### 26.1.2 -> 26.2
+
+Build-side only again — **no Java source file changed**, and no `fabric.mod.json` change beyond the
+templated versions.
+
+| Concern | 26.1.2 | 26.2 |
+|---|---|---|
+| `minecraft_version` | 26.1.2 | 26.2 |
+| Fabric Loader | 0.19.2 | 0.19.3 |
+| Fabric API | 0.149.0+26.1.2 | 0.153.0+26.2 |
+| Loom plugin | `net.fabricmc.fabric-loom` 1.16-SNAPSHOT | unchanged |
+| Gradle wrapper | 9.4.1 | unchanged |
+| Java | 25 | unchanged |
+| NightConfig | 3.8.1 | unchanged |
+
+The headline 26.2 change upstream is the move from immediate-mode `Tesselator` / `MeshData` to
+`StagedVertexBuffer`. That is a client render-pipeline change and this mod has no client code, no
+rendering and no mixins, so none of it applies. The Fabric API event classes the mod subscribes to
+(`PlayerBlockBreakEvents.BEFORE`, `AttackBlockCallback`, `ServerPlayConnectionEvents`,
+`ServerEntityEvents.ENTITY_LOAD`, `CommandRegistrationCallback`, `ServerLifecycleEvents`) all kept
+their packages and signatures, and the vanilla types the mod touches (`BlockPos`, `Level` /
+`ServerLevel`, `ItemStack`, `Player` / `ServerPlayer`, `TagKey`, `CommandSourceStack`) are unchanged.
 
 ## Building
 
