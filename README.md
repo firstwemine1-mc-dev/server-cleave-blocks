@@ -1,4 +1,4 @@
-# Server-side Vein Miner — Fabric 26.2
+# Server-side Vein Miner — Fabric 26.3
 
 A mod for Minecraft which allows to instantly mine ore veins
 
@@ -6,7 +6,8 @@ A mod for Minecraft which allows to instantly mine ore veins
 > This branch is a modified version of [Server-side Vein Miner](https://github.com/Tourmi/mc-server-side-vein-miner)
 > by Tourmi. It was ported from the Forge 1.21.6 sources to **Fabric, Minecraft 1.21.11**, then
 > bumped to **Fabric, Minecraft 26.1.2** (both on **2026-09-22**), and then bumped again to
-> **Fabric, Minecraft 26.2** on **2026-09-23**. Like the original, it is distributed under the GNU General Public License v3 —
+> **Fabric, Minecraft 26.2** and on to **Fabric, Minecraft 26.3** on **2026-09-23**.
+> Like the original, it is distributed under the GNU General Public License v3 —
 > see [LICENSE](LICENSE). The changes are listed under [Fabric port notes](#fabric-port-notes).
 
 ## Features so far
@@ -19,7 +20,7 @@ A mod for Minecraft which allows to instantly mine ore veins
 
 ## Installing
 
-Requires **Fabric Loader 0.19.3+**, **Fabric API**, and **Java 25**, on Minecraft **26.2**.
+Requires **Fabric Loader 0.19.5+**, **Fabric API**, and **Java 25**, on Minecraft **26.3**.
 
 Drop the jar in the server's `mods` folder. Clients do not need it. The mod also runs on a client
 (single player, open to LAN), which is why it declares `"environment": "*"` rather than `"server"` —
@@ -98,6 +99,29 @@ rendering and no mixins, so none of it applies. The Fabric API event classes the
 `ServerEntityEvents.ENTITY_LOAD`, `CommandRegistrationCallback`, `ServerLifecycleEvents`) all kept
 their packages and signatures, and the vanilla types the mod touches (`BlockPos`, `Level` /
 `ServerLevel`, `ItemStack`, `Player` / `ServerPlayer`, `TagKey`, `CommandSourceStack`) are unchanged.
+
+### 26.2 -> 26.3
+
+Build-side only once more — **no Java source file changed**. Unlike the 26.1.2 -> 26.2 hop, this one
+also moves the build toolchain: the Loom plugin and the Gradle wrapper both step up.
+
+| Concern | 26.2 | 26.3 |
+|---|---|---|
+| `minecraft_version` | 26.2 | 26.3 |
+| Fabric Loader | 0.19.3 | 0.19.5 |
+| Fabric API | 0.153.0+26.2 | 0.160.5+26.3 |
+| Loom plugin | `net.fabricmc.fabric-loom` 1.16-SNAPSHOT | `net.fabricmc.fabric-loom` **1.17-SNAPSHOT** |
+| Gradle wrapper | 9.4.1 | **9.6.0** |
+| Java | 25 | unchanged |
+| NightConfig | 3.8.1 | unchanged |
+
+26.3's own headline change upstream is the render submission model again — `StagedVertexBuffer`
+being replaced by the submit/collect model (`LevelRenderEvents.COLLECT_SUBMITS`,
+`SubmitNodeCollector`). As with 26.2, that is all client rendering and this mod has none. The two
+non-render 26.3 renames worth checking, `Axis` rotation helpers and `new BlockPos(pos)` becoming
+`pos.immutable()`, do not occur in this source tree: the mod only ever constructs `BlockPos` from
+coordinates or calls `relative`/`offset`, never from a mutable copy. All six Fabric API events the
+mod subscribes to still resolve at their existing packages.
 
 ## Building
 
