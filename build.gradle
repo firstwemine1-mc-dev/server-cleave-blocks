@@ -2,7 +2,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.fabricmc.fabric-loom-remap' version '1.16-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
 }
 
 version = "${minecraft_version}-${mod_version}"
@@ -36,12 +36,10 @@ repositories {
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    // Mojang official mappings, so the sources stay identical to the Forge branch.
-    // (Yarn would mean rewriting every vanilla name for no benefit here.)
-    mappings loom.officialMojangMappings()
+    // No mappings line: Minecraft 26.x ships unobfuscated, so the Mojang names are the real ones.
 
-    modImplementation "net.fabricmc:fabric-loader:${loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
+    implementation "net.fabricmc:fabric-loader:${loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
     // NightConfig backs dev.tourmi.svmm.config.spec, the stand-in for ForgeConfigSpec.
     // Forge bundles it; Fabric does not, so it is jar-in-jar'd.

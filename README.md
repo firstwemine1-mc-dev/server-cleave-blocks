@@ -1,11 +1,11 @@
-# Server-side Vein Miner — Fabric 1.21.11
+# Server-side Vein Miner — Fabric 26.1.2
 
 A mod for Minecraft which allows to instantly mine ore veins
 
 > **Modified version notice (GPLv3 §5a).**
 > This branch is a modified version of [Server-side Vein Miner](https://github.com/Tourmi/mc-server-side-vein-miner)
-> by Tourmi. It was ported from the Forge 1.21.6 sources to **Fabric, Minecraft 1.21.11** on
-> **2026-09-22**. Like the original, it is distributed under the GNU General Public License v3 —
+> by Tourmi. It was ported from the Forge 1.21.6 sources to **Fabric, Minecraft 1.21.11**, and then
+> bumped to **Fabric, Minecraft 26.1.2**, both on **2026-09-22**. Like the original, it is distributed under the GNU General Public License v3 —
 > see [LICENSE](LICENSE). The changes are listed under [Fabric port notes](#fabric-port-notes).
 
 ## Features so far
@@ -18,7 +18,7 @@ A mod for Minecraft which allows to instantly mine ore veins
 
 ## Installing
 
-Requires **Fabric Loader 0.19.2+**, **Fabric API**, and **Java 21**, on Minecraft **1.21.11**.
+Requires **Fabric Loader 0.19.2+**, **Fabric API**, and **Java 25**, on Minecraft **26.1.2**.
 
 Drop the jar in the server's `mods` folder. Clients do not need it. The mod also runs on a client
 (single player, open to LAN), which is why it declares `"environment": "*"` rather than `"server"` —
@@ -55,6 +55,25 @@ NightConfig is bundled into the jar (jar-in-jar), because Fabric — unlike Forg
 Minecraft 1.21.11 also renamed `ResourceLocation` to `Identifier` and replaced
 `CommandSourceStack#hasPermission(int)` with `PermissionCheck#check(PermissionSet)`; both are version
 changes rather than loader ones.
+
+### 1.21.11 -> 26.1.2
+
+This bump was build-side only — **no Java source file changed**. Minecraft 26.x ships
+unobfuscated, so:
+
+| Concern | 1.21.11 | 26.1.2 |
+|---|---|---|
+| Loom plugin | `net.fabricmc.fabric-loom-remap` | `net.fabricmc.fabric-loom` (same `1.16-SNAPSHOT`) |
+| Mappings | `mappings loom.officialMojangMappings()` | no `mappings` line at all — the shipped names *are* the Mojang names |
+| Mod dependencies | `modImplementation` (remapped) | plain `implementation`, since there is nothing left to remap |
+| Java | 21 | 25 (`java_version` in `gradle.properties`, which also drives `fabric.mod.json` and the CI JDK) |
+| Fabric API | `0.141.4+1.21.11` | `0.149.0+26.1.2` |
+
+The 26.1.2 vanilla renames that usually bite a port — `ChunkPos` becoming a record with `x()`/`z()`
+accessors, `ChunkPos.asLong` becoming `ChunkPos.pack`, the `RenderType` / `RenderTypes` move,
+`LightTexture.pack` becoming `LightCoordsUtil.pack` — do not touch this mod: it is server-side only
+and uses none of those APIs. Fabric Loader stayed at `0.19.2` and the jar-in-jar'd NightConfig
+stayed at `3.8.1`.
 
 ## Building
 
