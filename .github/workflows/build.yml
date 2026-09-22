@@ -5,10 +5,12 @@ on:
     branches:
     - main
     - release/*
+    - neoforge/*
   pull_request:
     branches:
     - main
     - release/*
+    - neoforge/*
 
 jobs:
   build:

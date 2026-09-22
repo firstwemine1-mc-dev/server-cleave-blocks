@@ -1,8 +1,13 @@
 plugins {
+    id 'java-library'
     id 'eclipse'
     id 'idea'
     id 'maven-publish'
-    id 'net.minecraftforge.gradle' version '[6.0.36,6.2)'
+    id 'net.neoforged.moddev' version '2.0.141'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
 }
 
 version = "${minecraft_version}-${mod_version}"
@@ -15,115 +20,79 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(java_version)
 
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
-minecraft {
-    mappings channel: 'official', version: minecraft_version
-    if (disable_reobf.toBoolean()) {
-      reobf = false
-    }
-    copyIdeResources = true
-    enableEclipsePrepareRuns = true
-    enableIdeaPrepareRuns = true
+
+neoForge {
+    version = project.neo_version
+
     runs {
-        configureEach {
-            workingDirectory project.file('run')
-
-            property 'forge.logging.markers', 'REGISTRIES'
-
-            property 'forge.logging.console.level', 'debug'
-        }
-
         client {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         server {
-            property 'forge.enabledGameTestNamespaces', mod_id
-            args '--nogui'
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
         gameTestServer {
-            property 'forge.enabledGameTestNamespaces', mod_id
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
-        data {
-            workingDirectory project.file('run-data')
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
 
-            args '--mod', mod_id, '--all', '--output', file('src/generated/resources/'), '--existing', file('src/main/resources/')
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
         }
     }
 }
-
-sourceSets.main.resources {
-    srcDir 'src/generated/resources'
-}
-
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-    implementation('net.sf.jopt-simple:jopt-simple:5.0.4') { version { strictly '5.0.4' } }
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        name = 'Forge'
-        url = 'https://maven.minecraftforge.net'
-    }
-    maven {
-        name = 'Minecraft libraries'
-        url = 'https://libraries.minecraft.net'
-    }
-    exclusiveContent {
-        forRepository {
-            maven {
-                name = 'Sponge'
-                url = 'https://repo.spongepowered.org/repository/maven-public'
-            }
-        }
-        filter {
-            includeGroupAndSubgroups('org.spongepowered')
-        }
-    }
-}
+def generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    def replaceProperties = [
+            mod_id                   : mod_id,
+            version                  : version,
+            mod_version              : mod_version,
+            mod_group                : mod_group,
+            mod_name                 : mod_name,
+            mod_description          : mod_description,
+            mod_credits              : mod_credits,
+            mod_issue_tracker        : mod_issue_tracker,
+            mod_url                  : mod_url,
+            mod_license              : mod_license,
 
-tasks.named('processResources', ProcessResources) {
-    def properties = [
-            mod_id:mod_id,
-            version:version,
-            mod_version:mod_version,
-            mod_group:mod_group,
-            mod_name:mod_name,
-            mod_description:mod_description,
-            mod_credits:mod_credits,
-            mod_issue_tracker:mod_issue_tracker,
-            mod_url:mod_url,
-            mod_license:mod_license,
+            author_name              : author_name,
+            author_domain            : author_domain,
 
-            author_name:author_name,
-            author_domain:author_domain,
+            minecraft_version        : minecraft_version,
+            minecraft_version_range  : minecraft_version_range,
 
-            minecraft_version:minecraft_version,
-            minecraft_min_version:minecraft_min_version,
-            minecraft_max_version:minecraft_max_version,
-
-            forge_version:forge_version,
-            forge_min_version:forge_min_version,
-            forge_max_version:forge_max_version,
-            forge_update_json_url:forge_update_json_url,
-            forge_displaytest_value:forge_displaytest_value,
-            forge_minecraft_side:forge_minecraft_side
+            neo_version              : neo_version,
+            neoforge_minecraft_side  : neoforge_minecraft_side,
     ]
-
-    inputs.properties properties
-
-    from(sourceSets.main.resources.srcDirs) {
-        duplicatesStrategy 'include'
-        include 'META-INF/mods.toml'
-        expand properties
-    }
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from 'src/main/templates'
+    into layout.buildDirectory.dir('generated/sources/modMetadata')
 }
+
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
 
 tasks.named('jar', Jar) {
+    from(rootProject.file('LICENSE')) {
+        rename { "${it}_${mod_name.replaceAll('\s', '_')}" }
+    }
+
     manifest {
         attributes([
                 "Specification-Title"     : mod_name,
@@ -137,12 +106,26 @@ tasks.named('jar', Jar) {
     }
 }
 
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = project.layout.buildDirectory.dir('repo')
+        }
+    }
+}
+
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
 
-sourceSets.each {
-    def dir = layout.buildDirectory.dir("sourcesSets/$it.name")
-    it.output.resourcesDir = dir
-    it.java.destinationDirectory = dir
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
 }

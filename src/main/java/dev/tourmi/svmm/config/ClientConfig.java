@@ -2,29 +2,29 @@ package dev.tourmi.svmm.config;
 
 import com.electronwill.nightconfig.core.EnumGetMethod;
 import dev.tourmi.svmm.utils.PredicateUtils;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
 
 public final class ClientConfig {
-    public final ForgeConfigSpec SPEC;
+    public final ModConfigSpec SPEC;
 
-    public final ForgeConfigSpec.BooleanValue MOD_DISABLED;
-    public final ForgeConfigSpec.BooleanValue MOD_RESTRICTED;
+    public final ModConfigSpec.BooleanValue MOD_DISABLED;
+    public final ModConfigSpec.BooleanValue MOD_RESTRICTED;
 
-    public final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_DISABLED;
-    public final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_RESTRICTED;
+    public final ModConfigSpec.BooleanValue GIANT_VEIN_MINING_DISABLED;
+    public final ModConfigSpec.BooleanValue GIANT_VEIN_MINING_RESTRICTED;
 
-    public final ForgeConfigSpec.BooleanValue TUNNELING_RESTRICTED;
+    public final ModConfigSpec.BooleanValue TUNNELING_RESTRICTED;
 
-    public final ForgeConfigSpec.BooleanValue FORCE_RESTRICTED;
+    public final ModConfigSpec.BooleanValue FORCE_RESTRICTED;
 
-    public final ForgeConfigSpec.EnumValue<TriggerActions> TRIGGER_WHEN;
+    public final ModConfigSpec.EnumValue<TriggerActions> TRIGGER_WHEN;
 
     public ClientConfig(UUID playerUUID) {
-        ForgeConfigSpec.Builder builder = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push("svmm-player-" + playerUUID.toString());
 
         builder.push("self-config");

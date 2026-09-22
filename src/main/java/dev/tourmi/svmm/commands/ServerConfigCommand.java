@@ -8,7 +8,7 @@ import dev.tourmi.svmm.config.SVMMConfig;
 import dev.tourmi.svmm.utils.CommandUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,9 +26,9 @@ public final class ServerConfigCommand implements ICommand {
         TUNNELING_BLACKLIST(SVMMConfig.TUNNELING_BLACKLIST),
         FORCE_BLACKLIST(SVMMConfig.FORCE_BLACKLIST);
 
-        final ForgeConfigSpec.ConfigValue<List<? extends String>> config;
+        final ModConfigSpec.ConfigValue<List<? extends String>> config;
 
-        ConfigListKeys(ForgeConfigSpec.ConfigValue<List<? extends String>> config) {
+        ConfigListKeys(ModConfigSpec.ConfigValue<List<? extends String>> config) {
             this.config = config;
         }
 

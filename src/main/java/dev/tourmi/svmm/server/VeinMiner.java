@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.level.BlockEvent;
+import net.minecraft.world.level.LevelAccessor;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -24,17 +24,17 @@ import java.util.List;
 public final class VeinMiner {
     private static final Logger LOGGER = LogUtils.getLogger();
 
-    public boolean onBlockBroken(BlockEvent.BreakEvent event) {
-        if (event.getLevel().isClientSide()) return false;
+    /**
+     * @return whether the mod handled the block itself, in which case the vanilla break must be cancelled.
+     */
+    public boolean onBlockBroken(LevelAccessor brokenLevel, Player breakingPlayer, BlockPos blockPos, BlockState blockState) {
+        if (brokenLevel.isClientSide()) return false;
         if (SVMMConfig.MOD_DISABLED.get()) return false;
+        if (!(breakingPlayer instanceof ServerPlayer player)) return false;
+        if (!(brokenLevel instanceof ServerLevel level)) return false;
 
-        ServerPlayer player = (ServerPlayer) event.getPlayer();
         ItemStack heldItem = player.getMainHandItem();
-        BlockState blockState = event.getState();
         if (!canUseMod(player, heldItem, blockState)) return false;
-
-        ServerLevel level = player.level();
-        BlockPos blockPos = event.getPos();
 
         if (canTunnel(player, blockState)) {
             doTunnel(player, level, heldItem, blockState, blockPos);

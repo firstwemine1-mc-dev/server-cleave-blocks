@@ -1,11 +1,12 @@
 package dev.tourmi.svmm.config;
 
 import dev.tourmi.svmm.utils.ModUtils;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.LevelResource;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.config.ConfigTracker;
-import net.minecraftforge.fml.config.ModConfig;
+import net.neoforged.fml.config.ConfigTracker;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.loading.FMLPaths;
 
 import javax.annotation.Nullable;
 import java.nio.file.Path;
@@ -13,6 +14,8 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public final class ClientConfigs {
+    private static final LevelResource SERVERCONFIG = new LevelResource("serverconfig");
+
     private final static HashMap<UUID, ClientConfig> clientConfigs = new HashMap<>();
 
     public static ClientConfig getClientConfig(Entity player) {
@@ -32,8 +35,14 @@ public final class ClientConfigs {
         ClientConfig cfg = new ClientConfig(playerUUID);
         String configPath = "svmm-player-configs/" + playerUUID + ".toml";
         ModUtils.RegisterConfig(cfg.SPEC, configPath);
-        Path serverConfig = player.getServer().getWorldPath(new LevelResource("serverconfig"));
-        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, serverConfig);
+
+        // The only public way to bring a newly registered config into memory. Mirrors what
+        // NeoForge's own ServerLifecycleHooks#handleServerAboutToStart does: the config directory is
+        // the source, the world's serverconfig folder is the per-world override.
+        MinecraftServer server = player.level().getServer();
+        Path worldOverrides = server.getWorldPath(SERVERCONFIG);
+        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, FMLPaths.CONFIGDIR.get(), worldOverrides);
+
         clientConfigs.put(playerUUID, cfg);
     }
 }

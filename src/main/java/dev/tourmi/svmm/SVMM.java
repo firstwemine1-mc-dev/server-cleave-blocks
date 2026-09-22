@@ -8,14 +8,16 @@ import dev.tourmi.svmm.server.ItemTeleporter;
 import dev.tourmi.svmm.server.Tunneler;
 import dev.tourmi.svmm.server.VeinMiner;
 import dev.tourmi.svmm.utils.ModUtils;
-import net.minecraftforge.event.RegisterCommandsEvent;
-import net.minecraftforge.event.entity.EntityEvent;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.event.level.BlockEvent;
-import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.event.server.ServerStartingEvent;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
 
 @Mod(SVMM.MOD_ID)
@@ -27,9 +29,16 @@ public final class SVMM
 
     private final VeinMiner veinMiner = new VeinMiner();
 
-    public SVMM()
+    /**
+     * NeoForge hands the mod bus and the mod container to the constructor.
+     * <p>
+     * Everything this mod listens to is a <em>game</em> event, so all listeners go on
+     * {@link net.neoforged.neoforge.common.NeoForge#EVENT_BUS}; the mod bus is only used by
+     * NeoForge itself for the mod-loading lifecycle, which this mod does not take part in.
+     */
+    public SVMM(IEventBus modEventBus, ModContainer modContainer)
     {
-        ModUtils.RegisterMod(this);
+        ModUtils.RegisterMod(this, modContainer);
     }
 
     @SubscribeEvent
@@ -44,8 +53,11 @@ public final class SVMM
     }
 
     @SubscribeEvent
-    public boolean onBlockBroken(BlockEvent.BreakEvent event) {
-        return veinMiner.onBlockBroken(event);
+    public void onBlockBroken(BreakBlockEvent event) {
+        if (veinMiner.onBlockBroken(event.getLevel(), event.getPlayer(), event.getPos(), event.getState())) {
+            // The mod mined (or tunneled) the block itself, so the vanilla break must not happen.
+            event.setCanceled(true);
+        }
     }
 
     @SubscribeEvent
@@ -67,7 +79,7 @@ public final class SVMM
     }
 
     @SubscribeEvent
-    public void onItemSpawn(EntityEvent.EntityConstructing event) {
+    public void onItemSpawn(EntityJoinLevelEvent event) {
         ItemTeleporter.checkAndTeleport(event.getEntity());
     }
 }

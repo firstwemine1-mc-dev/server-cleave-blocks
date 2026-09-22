@@ -7,7 +7,7 @@ import dev.tourmi.svmm.config.ClientConfig;
 import dev.tourmi.svmm.utils.CommandUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.text.MessageFormat;
 
@@ -68,7 +68,7 @@ public final class ToggleFeaturesCommand implements ICommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private void toggle(CommandContext<CommandSourceStack> cc, ClientConfig cfg, ForgeConfigSpec.BooleanValue toggleFeature) {
+    private void toggle(CommandContext<CommandSourceStack> cc, ClientConfig cfg, ModConfigSpec.BooleanValue toggleFeature) {
         toggleFeature.set(disable);
 
         if (CommandUtils.isModerator(cc)) {

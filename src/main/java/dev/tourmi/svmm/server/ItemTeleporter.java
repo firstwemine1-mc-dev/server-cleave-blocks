@@ -9,7 +9,7 @@ import net.minecraft.world.entity.player.Player;
 
 public final class ItemTeleporter {
     public static void checkAndTeleport(Entity entity) {
-        var server = entity.getServer();
+        var server = entity.level().getServer();
         if (server == null) return;
         if (!SVMMConfig.TELEPORT_ITEMS_TO_PLAYER.get()) return;
         if (!(entity instanceof ItemEntity item)) return;
