@@ -27,7 +27,7 @@ public final class RestrictOrAllowFeaturesCommand implements ICommand {
 
         helpText = MessageFormat.format("""
                 - /svmm {0} '{player}'
-                - /svmm {0} [giantVein|tunnel|force] '{player}'
+                - /svmm {0} [giantVein|tree|tunnel|force] '{player}'
                     {0}s the mod or specific features for the given player
                 """, action);
     }
@@ -38,10 +38,17 @@ public final class RestrictOrAllowFeaturesCommand implements ICommand {
                 .requires(CommandPredicates::isModerator)
                 .then(Commands.argument("player", EntityArgument.player())
                         .executes(this::setModRestriction)) // /svmm restrict|allow {player}
+                // These are siblings of giantVein, not children of it. They used to be chained onto
+                // the giantVein builder, which put them a level too deep: the only way to reach
+                // them was /svmm restrict giantVein tunnel {player}.
                 .then(Commands.literal("giantVein")
                         .requires(CommandPredicates::isGiantVeinMiningEnabled)
                         .then(Commands.argument("player", EntityArgument.player())
-                                .executes(this::setGiantVeinRestriction)) // /svmm restrict|allow giantVein {player}
+                                .executes(this::setGiantVeinRestriction))) // /svmm restrict|allow giantVein {player}
+                .then(Commands.literal("tree")
+                        .requires(CommandPredicates::isTreeFellingEnabled)
+                        .then(Commands.argument("player", EntityArgument.player())
+                                .executes(this::setTreeFellingRestriction))) // /svmm restrict|allow tree {player}
                 .then(Commands.literal("tunnel")
                         .requires(CommandPredicates::isTunnelingEnabled)
                         .then(Commands.argument("player", EntityArgument.player())
@@ -50,7 +57,7 @@ public final class RestrictOrAllowFeaturesCommand implements ICommand {
                         .requires(CommandPredicates::isForceVeinMiningEnabled)
                         .requires(CommandPredicates::canPlayerAccessForceVeinMining)
                         .then(Commands.argument("player", EntityArgument.player())
-                                .executes(this::setForceRestriction)))); // /svmm restrict|allow force {player}
+                                .executes(this::setForceRestriction))); // /svmm restrict|allow force {player}
     }
 
     @Override
@@ -82,6 +89,18 @@ public final class RestrictOrAllowFeaturesCommand implements ICommand {
         cfg.SPEC.save();
 
         CommandUtils.sendMessage(commandContext, MessageFormat.format("Giant Vein Mining is now {0} for {1}.", status, player.getName().getString()));
+
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int setTreeFellingRestriction(CommandContext<CommandSourceStack> commandContext) throws CommandSyntaxException {
+        Entity player = EntityArgument.getEntity(commandContext, "player");
+
+        ClientConfig cfg = ClientConfigs.getClientConfig(player);
+        cfg.TREE_FELLING_RESTRICTED.set(restrict);
+        cfg.SPEC.save();
+
+        CommandUtils.sendMessage(commandContext, MessageFormat.format("Tree Felling is now {0} for {1}.", status, player.getName().getString()));
 
         return Command.SINGLE_SUCCESS;
     }

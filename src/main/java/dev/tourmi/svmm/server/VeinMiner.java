@@ -41,6 +41,9 @@ public final class VeinMiner {
         else if (canGiantVeinMine(player, blockState)) {
             doGiantVeinMine(player, level, heldItem, blockPos);
         }
+        else if (TreeFeller.canFellTree(player, blockState)) {
+            TreeFeller.fellTree(player, level, heldItem, blockPos);
+        }
         else if (canVeinMine(player, blockState)) {
             doVeinMine(player, level, heldItem, blockState, blockPos);
         } else {
