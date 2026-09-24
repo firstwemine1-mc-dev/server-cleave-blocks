@@ -9,6 +9,16 @@ A mod for Minecraft which allows to instantly mine ore veins
 > **Fabric, Minecraft 26.2** on **2026-09-23**. Like the original, it is distributed under the GNU General Public License v3 —
 > see [LICENSE](LICENSE). The changes are listed under [Fabric port notes](#fabric-port-notes).
 
+## Purpose of this fork
+
+[Server-side Vein Miner](https://github.com/Tourmi/mc-server-side-vein-miner) by Tourmi is
+published for **Forge only**. This fork exists to make the same mod available on the loaders and
+Minecraft versions that are not covered there — Fabric and NeoForge. That is its only purpose.
+
+It is not a rewrite and not a feature fork: behaviour, config keys and command syntax are kept as
+close to the original as each loader allows, so a config from the original carries over. If you
+are playing on Forge, use Tourmi's own releases — that is the supported build.
+
 ## Features so far
 - When mining an ore block (the allowed blocks are configurable), all of its identical neighbors are also mined, recursively until there are no longer any blocks
 - Configurable maximum amount of blocks to destroy at once
