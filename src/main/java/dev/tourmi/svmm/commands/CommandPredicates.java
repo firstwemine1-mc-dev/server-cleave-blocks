@@ -64,6 +64,17 @@ public final class CommandPredicates {
     }
 
     private static boolean canPlayerAccessFeature(CommandSourceStack cs, Supplier<ConfigSpec.BooleanValue> isRestricted) {
-        return isModerator(cs) || !isRestricted.get().get();
+        if (isModerator(cs)) {
+            return true;
+        }
+
+        // The command tree is built and sent during login, before the player entity is attached to
+        // the source, so there is no per-player config to consult yet. Stay permissive here: the
+        // predicate is evaluated again, with a real player, when the command is actually run.
+        if (cs.getPlayer() == null) {
+            return true;
+        }
+
+        return !isRestricted.get().get();
     }
 }
