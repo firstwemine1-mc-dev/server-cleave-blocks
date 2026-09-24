@@ -17,6 +17,9 @@ public final class ClientConfig {
     public final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_DISABLED;
     public final ForgeConfigSpec.BooleanValue GIANT_VEIN_MINING_RESTRICTED;
 
+    public final ForgeConfigSpec.BooleanValue TREE_FELLING_DISABLED;
+    public final ForgeConfigSpec.BooleanValue TREE_FELLING_RESTRICTED;
+
     public final ForgeConfigSpec.BooleanValue TUNNELING_RESTRICTED;
 
     public final ForgeConfigSpec.BooleanValue FORCE_RESTRICTED;
@@ -43,6 +46,9 @@ public final class ClientConfig {
 
         GIANT_VEIN_MINING_DISABLED = builder.comment("Whether or not the player disabled giant vein mining for themselves")
                 .define("giant_vein_mining_disabled", SVMMConfig.GIANT_VEIN_MINING_DEFAULT_DISABLED);
+
+        TREE_FELLING_DISABLED = builder.comment("Whether or not the player disabled tree felling for themselves")
+                .define("tree_felling_disabled", SVMMConfig.TREE_FELLING_DEFAULT_DISABLED);
         builder.pop();
 
         builder.push("restrictions");
@@ -51,6 +57,9 @@ public final class ClientConfig {
 
         GIANT_VEIN_MINING_RESTRICTED = builder.comment("Whether or not giant vein mining was restricted by an operator")
                 .define("giant_vein_mining_restricted", SVMMConfig.GIANT_VEIN_MINING_DEFAULT_RESTRICTED);
+
+        TREE_FELLING_RESTRICTED = builder.comment("Whether or not tree felling was restricted by an operator")
+                .define("tree_felling_restricted", SVMMConfig.TREE_FELLING_DEFAULT_RESTRICTED);
 
         TUNNELING_RESTRICTED = builder.comment("Whether or not tunneling was restricted by an operator")
                 .define("tunneling_restricted", SVMMConfig.TUNNELING_DEFAULT_RESTRICTED);

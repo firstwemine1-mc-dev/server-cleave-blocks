@@ -64,6 +64,7 @@ public final class MinecraftUtils {
 
         var blockState = level.getBlockState(blockPos);
         heldItem.mineBlock(level, blockState, blockPos, player);
+        applyExtraDurabilityCost(heldItem, blockState);
         blockState.getBlock().popExperience(level, blockPos, EnchantUtils.getExp(level, heldItem, blockPos, blockState));
         blockState.getBlock().playerDestroy(level, player, blockPos, blockState, level.getBlockEntity(blockPos), heldItem);
         level.removeBlock(blockPos, false);
@@ -84,6 +85,24 @@ public final class MinecraftUtils {
 
             mineBlock(level, player, pos, heldItem);
         }
+    }
+
+    /**
+     * Vanilla's {@code mineBlock} already costs one durability point per block, so the mod is
+     * charged per block and not per vein. This adds the extra cost on top when the server wants
+     * vein mining to be more expensive than mining by hand.
+     * <p>
+     * Uses {@code getDamageValue}/{@code setDamageValue} rather than {@code hurtAndBreak}, whose
+     * signature differs across the Minecraft versions this mod is ported to. Breaking the tool is
+     * left to vanilla and to {@link #shouldStopMining}.
+     */
+    private static void applyExtraDurabilityCost(ItemStack item, BlockState blockState) {
+        int extra = SVMMConfig.DURABILITY_MULTIPLIER.get() - 1;
+        if (extra <= 0 || !item.isDamageableItem()) return;
+        // Vanilla only damages the tool for blocks that take time to break, so match that.
+        if (blockState.getDestroySpeed(null, null) == 0.0F) return;
+
+        item.setDamageValue(Math.min(item.getDamageValue() + extra, item.getMaxDamage()));
     }
 
     private static boolean shouldStopMining(boolean letItemBreak, ItemStack item) {
