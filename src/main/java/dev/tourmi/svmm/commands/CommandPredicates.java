@@ -31,6 +31,10 @@ public final class CommandPredicates {
         return isFeatureEnabled(SVMMConfig.GIANT_VEIN_MINING_DISABLED);
     }
 
+    public static boolean isTreeFellingEnabled(CommandSourceStack cs) {
+        return isFeatureEnabled(SVMMConfig.TREE_FELLING_DISABLED);
+    }
+
     public static boolean isTunnelingEnabled(CommandSourceStack cs) {
         return isFeatureEnabled(SVMMConfig.TUNNELING_DISABLED);
     }
@@ -49,6 +53,10 @@ public final class CommandPredicates {
 
     public static boolean canPlayerAccessGiantVeinMining(CommandSourceStack cs) {
         return canPlayerAccessFeature(cs, () -> CommandUtils.getSourceConfig(cs).GIANT_VEIN_MINING_RESTRICTED);
+    }
+
+    public static boolean canPlayerAccessTreeFelling(CommandSourceStack cs) {
+        return canPlayerAccessFeature(cs, () -> CommandUtils.getSourceConfig(cs).TREE_FELLING_RESTRICTED);
     }
 
     public static boolean canPlayerAccessTunneling(CommandSourceStack cs) {

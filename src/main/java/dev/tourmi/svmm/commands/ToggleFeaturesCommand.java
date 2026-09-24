@@ -23,7 +23,7 @@ public final class ToggleFeaturesCommand implements ICommand {
         this.status = disable ? "disabled" : "enabled";
 
         helpText = MessageFormat.format("""
-                - /svmm {0} [giantVein]
+                - /svmm {0} [giantVein|tree]
                     {0}s the mod or specific features for yourself
                 """, action);
     }
@@ -35,8 +35,12 @@ public final class ToggleFeaturesCommand implements ICommand {
                 .then(Commands.literal("giantVein")
                         .requires(CommandPredicates::isGiantVeinMiningEnabled)
                         .requires(CommandPredicates::canPlayerAccessGiantVeinMining)
-                        .executes(this::toggleGiantVein)) // /svmm disable|enable
-                .executes(this::toggle); // /svmm disable|enable giantVein
+                        .executes(this::toggleGiantVein)) // /svmm disable|enable giantVein
+                .then(Commands.literal("tree")
+                        .requires(CommandPredicates::isTreeFellingEnabled)
+                        .requires(CommandPredicates::canPlayerAccessTreeFelling)
+                        .executes(this::toggleTree)) // /svmm disable|enable tree
+                .executes(this::toggle); // /svmm disable|enable
     }
 
     @Override
@@ -65,6 +69,16 @@ public final class ToggleFeaturesCommand implements ICommand {
         toggle(commandContext, cfg, cfg.GIANT_VEIN_MINING_DISABLED);
 
         CommandUtils.sendMessage(commandContext, MessageFormat.format("Giant Vein Mining is now {0}", status));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int toggleTree(CommandContext<CommandSourceStack> commandContext) {
+        if (CommandUtils.isConsole(commandContext)) return 0;
+
+        ClientConfig cfg = CommandUtils.getSourceConfig(commandContext);
+        toggle(commandContext, cfg, cfg.TREE_FELLING_DISABLED);
+
+        CommandUtils.sendMessage(commandContext, MessageFormat.format("Tree Felling is now {0}", status));
         return Command.SINGLE_SUCCESS;
     }
 
