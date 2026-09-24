@@ -26,6 +26,24 @@ public final class SVMMConfig {
     );
     public static final ConfigSpec.BooleanValue STOP_WHEN_ABOUT_TO_BREAK;
     public static final ConfigSpec.BooleanValue TELEPORT_ITEMS_TO_PLAYER;
+    public static final ConfigSpec.IntValue DURABILITY_MULTIPLIER;
+
+    public static final ConfigSpec.BooleanValue TREE_FELLING_DISABLED;
+    public static final ConfigSpec.BooleanValue TREE_FELLING_DEFAULT_DISABLED;
+    public static final ConfigSpec.BooleanValue TREE_FELLING_DEFAULT_RESTRICTED;
+    public static final ConfigSpec.BooleanValue TREE_FELLING_LOG_USAGE;
+    public static final ConfigSpec.BooleanValue TREE_FELLING_BREAK_LEAVES;
+    public static final ConfigSpec.IntValue TREE_FELLING_MAX_BLOCKS;
+    public static final ConfigSpec.ConfigValue<List<? extends String>> TREE_FELLING_LOG_WHITELIST;
+    private static final Supplier<List<String>> DEFAULT_TREE_FELLING_LOGS = () -> List.of(
+            "#minecraft:logs"
+    );
+    public static final ConfigSpec.ConfigValue<List<? extends String>> TREE_FELLING_LEAF_WHITELIST;
+    private static final Supplier<List<String>> DEFAULT_TREE_FELLING_LEAVES = () -> List.of(
+            "#minecraft:leaves"
+    );
+    public static final ConfigSpec.ConfigValue<List<? extends String>> TREE_FELLING_BLACKLIST;
+    private static final Supplier<List<String>> DEFAULT_TREE_FELLING_BLACKLIST = List::of;
 
     public static final ConfigSpec.BooleanValue GIANT_VEIN_MINING_DISABLED;
     public static final ConfigSpec.BooleanValue GIANT_VEIN_MINING_DEFAULT_DISABLED;
@@ -137,6 +155,9 @@ public final class SVMMConfig {
                 .define("stop_when_about_to_break_tool", true);
         TELEPORT_ITEMS_TO_PLAYER = builder.comment("Whether or not to teleport the mined items to the player")
                 .define("teleport_items_to_player", true);
+        DURABILITY_MULTIPLIER = builder.comment("How much durability each block broken by the mod costs.\n" +
+                        "1 is vanilla: one point per block. Higher values make the mod cost more than mining by hand.")
+                .defineInRange("durability_multiplier", 1, 1, Integer.MAX_VALUE);
         RUNTIME_CONFIG_DISABLED = builder.comment("Whether or not to allow moderators to modify the config at runtime")
                 .define("runtime_config_edit_disabled", false);
         TRIGGER_WHEN_DEFAULT = builder.comment("The default condition for when the mod triggers that new players will have")
@@ -156,6 +177,29 @@ public final class SVMMConfig {
                 .defineList("giant_vein_whitelist", DEFAULT_GIANT_VEIN_WHITELIST.get());
         GIANT_VEIN_BLACKLIST = builder.comment("Blocks the giant vein miner won't mine when triggered")
                 .defineList("giant_vein_blacklist", DEFAULT_GIANT_VEIN_BLACKLIST.get());
+        builder.pop();
+
+        builder.push("tree-felling");
+        TREE_FELLING_DISABLED = builder.comment("Whether or not tree felling is disabled on the server")
+                .define("tree_felling_disabled", false);
+        TREE_FELLING_DEFAULT_DISABLED = builder.comment("Whether or not tree felling is disabled by default for new players.\n" +
+                        "They may enable it with /svmm enable tree")
+                .define("tree_felling_default_disabled", false);
+        TREE_FELLING_DEFAULT_RESTRICTED = builder.comment("Whether or not tree felling is restricted by default for new players")
+                .define("tree_felling_default_restricted", false);
+        TREE_FELLING_LOG_USAGE = builder.comment("Whether or not to log to console whenever a player fells a tree")
+                .define("tree_felling_logging", false);
+        TREE_FELLING_BREAK_LEAVES = builder.comment("Whether or not to break the tree's leaves along with its logs")
+                .define("tree_felling_break_leaves", true);
+        TREE_FELLING_MAX_BLOCKS = builder.comment("The maximum amount of blocks a single tree felling may break.\n" +
+                        "Separate from maximum_blocks_to_break, since trees are much larger than ore veins")
+                .defineInRange("tree_felling_max_blocks", 256, 1, Integer.MAX_VALUE);
+        TREE_FELLING_LOG_WHITELIST = builder.comment("The blocks treated as tree trunks, which trigger and spread the felling")
+                .defineList("tree_felling_log_whitelist", DEFAULT_TREE_FELLING_LOGS.get());
+        TREE_FELLING_LEAF_WHITELIST = builder.comment("The blocks treated as leaves, broken around the felled logs when enabled")
+                .defineList("tree_felling_leaf_whitelist", DEFAULT_TREE_FELLING_LEAVES.get());
+        TREE_FELLING_BLACKLIST = builder.comment("Blocks tree felling will never break, even if they're part of a whitelist")
+                .defineList("tree_felling_blacklist", DEFAULT_TREE_FELLING_BLACKLIST.get());
         builder.pop();
 
         builder.push("tunneling");

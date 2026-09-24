@@ -44,6 +44,60 @@ public final class Utils3D {
         return visitedBlocks;
     }
 
+    /**
+     * Blocks belonging to the tree rooted at the broken log: every connected log, plus the leaves
+     * touching them when the server enables that. Logs join diagonally through branches, so the
+     * same 3x3x3 neighbourhood the vein miner uses is the right connectivity here too.
+     */
+    public static Collection<BlockPos> getTreeBlocks(BlockPos p, Level l, int limit) {
+        List<? extends String> logs = SVMMConfig.TREE_FELLING_LOG_WHITELIST.get();
+        List<? extends String> blacklist = SVMMConfig.TREE_FELLING_BLACKLIST.get();
+
+        HashSet<BlockPos> treeBlocks = new HashSet<>();
+        HashSet<BlockPos> newPositions = new HashSet<>();
+        newPositions.add(p);
+
+        while (!newPositions.isEmpty() && treeBlocks.size() < limit) {
+            BlockPos currPos = newPositions.iterator().next();
+
+            if (treeBlocks.size() + newPositions.size() < limit) {
+                newPositions.addAll(getMatchingBlocksConnectedToPos(currPos, l, logs, blacklist)
+                        .filter(pos -> !treeBlocks.contains(pos))
+                        .map(BlockPos::immutable)
+                        .toList());
+            }
+
+            treeBlocks.add(currPos);
+            newPositions.remove(currPos);
+        }
+
+        if (!SVMMConfig.TREE_FELLING_BREAK_LEAVES.get()) {
+            return treeBlocks;
+        }
+
+        List<? extends String> leaves = SVMMConfig.TREE_FELLING_LEAF_WHITELIST.get();
+        HashSet<BlockPos> withLeaves = new HashSet<>(treeBlocks);
+        for (BlockPos logPos : treeBlocks) {
+            if (withLeaves.size() >= limit) break;
+
+            for (BlockPos leafPos : getMatchingBlocksConnectedToPos(logPos, l, leaves, blacklist).map(BlockPos::immutable).toList()) {
+                if (withLeaves.size() >= limit) break;
+                withLeaves.add(leafPos);
+            }
+        }
+
+        return withLeaves;
+    }
+
+    private static Stream<BlockPos> getMatchingBlocksConnectedToPos(BlockPos pos, Level level, List<? extends String> whitelist, List<? extends String> blacklist) {
+        return BlockPos.betweenClosedStream(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))
+                .filter(bpos -> !bpos.equals(pos))
+                .filter(bpos -> {
+                    BlockState state = level.getBlockState(bpos);
+                    return MinecraftUtils.isBlockInList(state, whitelist) && !MinecraftUtils.isBlockInList(state, blacklist);
+                });
+    }
+
     public static Collection<BlockPos> getGiantVeinBlocks(BlockPos p, Level l, int limit) {
         HashSet<BlockPos> visitedBlocks = new HashSet<>();
         HashSet<BlockPos> newPositions = new HashSet<>();
