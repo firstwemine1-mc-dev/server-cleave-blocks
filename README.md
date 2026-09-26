@@ -1,4 +1,4 @@
-# Server-side Vein Miner — NeoForge 26.1.2
+# Cleave — NeoForge 26.1.2
 
 A mod for Minecraft which allows to instantly mine ore veins
 
@@ -29,6 +29,13 @@ It is not a rewrite and not a feature fork: behaviour, config keys and command s
 close to the original as each loader allows, so a config from the original carries over. If you
 are playing on Forge, use Tourmi's own releases — that is the supported build.
 
+### Name
+
+This fork is called **Cleave**. It was `svmm` while it was only a vein miner, and felling whole
+trees made that name wrong. The command root is `/cleave`; the old `/svmm` root is still
+registered as an alias, so existing command blocks and scripts keep working. The mod id, the
+config file names and the config root section moved with it.
+
 ## Features so far
 - When mining an ore block (the allowed blocks are configurable), all of its identical neighbors are also mined, recursively until there are no longer any blocks
 - Configurable maximum amount of blocks to destroy at once
@@ -36,6 +43,9 @@ are playing on Forge, use Tourmi's own releases — that is the supported build.
 - The appropriate tool must be equipped for vein mining to trigger
 - Vein mining applies all the enchantments of a tool, so Fortune, Silk Touch and Unbreaking all work properly
 - Giant veins may be mined all at once, if an appropriate ore block is mined next to other giant vein blocks (ex: tuff, raw ore blocks, etc)
+- Whole trees are felled when a log is broken with an axe, leaves included, on a block budget of its own
+- Configurable durability multiplier, so breaking in bulk can be made to cost more than mining by hand
+- Tunnelling, and a forced vein mine that ignores the ore whitelist for one block
 
 ## Installing
 
@@ -50,8 +60,8 @@ somewhere else**, so the paths differ:
 
 | | Forge 1.21.6 branch | This branch |
 |---|---|---|
-| Server settings | `<world>/serverconfig/svmm-config.toml` | `<instance>/config/svmm-config.toml` |
-| Per-player settings | `<world>/serverconfig/svmm-player-configs/<uuid>.toml` | `<instance>/config/svmm-player-configs/<uuid>.toml` |
+| Server settings | `<world>/serverconfig/cleave-config.toml` | `<instance>/config/cleave-config.toml` |
+| Per-player settings | `<world>/serverconfig/cleave-player-configs/<uuid>.toml` | `<instance>/config/cleave-player-configs/<uuid>.toml` |
 
 NeoForge's `ServerLifecycleHooks` now loads server configs from `<instance>/config/` and treats
 `<world>/serverconfig/` purely as an *override* folder (NeoForge writes a `readme.txt` there saying
@@ -69,7 +79,7 @@ Where the port had to diverge from the Forge branch:
 
 | Concern | Forge 56 / 1.21.6 | This branch |
 |---|---|---|
-| Entrypoint | `@Mod` class with a no-arg constructor | `@Mod` class with `SVMM(IEventBus modEventBus, ModContainer modContainer)` |
+| Entrypoint | `@Mod` class with a no-arg constructor | `@Mod` class with `Cleave(IEventBus modEventBus, ModContainer modContainer)` |
 | Listener registration | `BusGroup.DEFAULT.register(MethodHandles.lookup(), mod)` | `NeoForge.EVENT_BUS.register(mod)` — see [Which bus](#which-bus) below |
 | Block break | `BlockEvent.BreakEvent`, listener **returns `boolean`** to cancel | `net.neoforged.neoforge.event.level.block.BreakBlockEvent` (the 26.1.2 home of Forge's `BlockEvent.BreakEvent`), cancelled with `event.setCanceled(true)` |
 | Break event accessors | `event.getPlayer()/getState()/getPos()/getLevel()` | same, but `getLevel()` is a `LevelAccessor`, so `VeinMiner#onBlockBroken` now takes `(LevelAccessor, Player, BlockPos, BlockState)` and pattern-matches to `ServerLevel` / `ServerPlayer` |
