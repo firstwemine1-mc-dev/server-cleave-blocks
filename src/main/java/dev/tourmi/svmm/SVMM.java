@@ -16,7 +16,7 @@ import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+import net.neoforged.neoforge.event.level.BlockEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import org.slf4j.Logger;
 
@@ -53,7 +53,7 @@ public final class SVMM
     }
 
     @SubscribeEvent
-    public void onBlockBroken(BreakBlockEvent event) {
+    public void onBlockBroken(BlockEvent.BreakEvent event) {
         if (veinMiner.onBlockBroken(event.getLevel(), event.getPlayer(), event.getPos(), event.getState())) {
             // The mod mined (or tunneled) the block itself, so the vanilla break must not happen.
             event.setCanceled(true);
