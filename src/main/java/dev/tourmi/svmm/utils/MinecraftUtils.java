@@ -4,7 +4,7 @@ import dev.tourmi.svmm.config.SVMMConfig;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.server.TickTask;
 import net.minecraft.server.level.ServerLevel;
@@ -56,7 +56,7 @@ public final class MinecraftUtils {
         var tags = list.stream().filter((e) -> e.startsWith("#")).map(e -> e.substring(1)).toList();
         return tags
                 .stream()
-                .map((t) -> TagKey.create(Registries.BLOCK, Identifier.parse(t)))
+                .map((t) -> TagKey.create(Registries.BLOCK, ResourceLocation.parse(t)))
                 .anyMatch(bs::is);
     }
 

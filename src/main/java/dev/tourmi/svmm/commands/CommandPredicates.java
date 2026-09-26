@@ -20,7 +20,7 @@ public final class CommandPredicates {
     }
 
     public static boolean isModerator(CommandSourceStack cs) {
-        return Commands.LEVEL_GAMEMASTERS.check(cs.permissions());
+        return cs.hasPermission(Commands.LEVEL_GAMEMASTERS);
     }
 
     public static boolean isModEnabled(CommandSourceStack cs) {
