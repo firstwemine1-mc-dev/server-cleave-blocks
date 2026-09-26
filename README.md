@@ -1,4 +1,4 @@
-# Server-side Vein Miner — Fabric 26.2
+# Cleave — Fabric 26.2
 
 A mod for Minecraft which allows to instantly mine ore veins
 
@@ -19,6 +19,13 @@ It is not a rewrite and not a feature fork: behaviour, config keys and command s
 close to the original as each loader allows, so a config from the original carries over. If you
 are playing on Forge, use Tourmi's own releases — that is the supported build.
 
+### Name
+
+This fork is called **Cleave**. It was `svmm` while it was only a vein miner, and felling whole
+trees made that name wrong. The command root is `/cleave`; the old `/svmm` root is still
+registered as an alias, so existing command blocks and scripts keep working. The mod id, the
+config file names and the config root section moved with it.
+
 ## Features so far
 - When mining an ore block (the allowed blocks are configurable), all of its identical neighbors are also mined, recursively until there are no longer any blocks
 - Configurable maximum amount of blocks to destroy at once
@@ -26,6 +33,9 @@ are playing on Forge, use Tourmi's own releases — that is the supported build.
 - The appropriate tool must be equipped for vein mining to trigger
 - Vein mining applies all the enchantments of a tool, so Fortune, Silk Touch and Unbreaking all work properly
 - Giant veins may be mined all at once, if an appropriate ore block is mined next to other giant vein blocks (ex: tuff, raw ore blocks, etc)
+- Whole trees are felled when a log is broken with an axe, leaves included, on a block budget of its own
+- Configurable durability multiplier, so breaking in bulk can be made to cost more than mining by hand
+- Tunnelling, and a forced vein mine that ignores the ore whitelist for one block
 
 ## Installing
 
@@ -37,10 +47,11 @@ a `server` mod would not be loaded by the client at all.
 
 ## Configuration
 
-Same files, same format and same keys as the Forge version, so an existing config carries over:
+Same format and the same keys as the Forge version, but the file names follow the mod id, so a
+config written by an `svmm` build is not picked up by a `cleave` build:
 
-- `<world>/serverconfig/svmm-config.toml` — server settings
-- `<world>/serverconfig/svmm-player-configs/<uuid>.toml` — per-player settings
+- `<world>/serverconfig/cleave-config.toml` — server settings
+- `<world>/serverconfig/cleave-player-configs/<uuid>.toml` — per-player settings
 
 One default differs : the vein-mining whitelist ships as `#c:ores` instead of `#forge:ores`, since
 `c:` is the convention tag namespace on Fabric.
@@ -57,7 +68,7 @@ Where the port had to diverge from the Forge branch:
 | Login / logout | `PlayerEvent.PlayerLoggedIn/OutEvent` | `ServerPlayConnectionEvents.JOIN` / `DISCONNECT` |
 | Item drop pickup | `EntityEvent.EntityConstructing` | `ServerEntityEvents.ENTITY_LOAD` |
 | Commands | `RegisterCommandsEvent` | `CommandRegistrationCallback` |
-| Config | `ForgeConfigSpec` + `ModConfig.Type.SERVER` | `dev.tourmi.svmm.config.spec.ConfigSpec`, a small NightConfig-backed reimplementation, bound to the world's `serverconfig` directory on server start |
+| Config | `ForgeConfigSpec` + `ModConfig.Type.SERVER` | `io.github.firstwemine1.cleave.config.spec.ConfigSpec`, a small NightConfig-backed reimplementation, bound to the world's `serverconfig` directory on server start |
 | Block tags | `ForgeRegistries.BLOCKS.tags().createTagKey(...)` | `TagKey.create(Registries.BLOCK, ...)` |
 | Mined-block experience | `Block#popExperience` with a hand-computed Fortune / Silk Touch amount (`EnchantUtils`) | vanilla `playerDestroy` → `dropResources` → `spawnAfterBreak` already drops it, so `EnchantUtils` was removed. Forge suppresses that vanilla path, which is why the Forge branch needs its own |
 
