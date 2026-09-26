@@ -56,7 +56,7 @@ public final class MinecraftUtils {
         var tags = list.stream().filter((e) -> e.startsWith("#")).map(e -> e.substring(1)).toList();
         return tags
                 .stream()
-                .map((t) -> TagKey.create(Registries.BLOCK, ResourceLocation.parse(t)))
+                .map((t) -> TagKey.create(Registries.BLOCK, new ResourceLocation(t)))
                 .anyMatch(tag -> bs.is(tag));
     }
 
