@@ -1,4 +1,4 @@
-# Server-side Vein Miner
+# Cleave
 
 ## Modified version notice (GPLv3 section 5a)
 
@@ -31,8 +31,8 @@ license as the original; see [LICENSE](LICENSE).
   Forge 56 bus-group API.
 - Enchantment lookups use the pre-1.20.5 plain-object enchantment API.
 - No gameplay, command, or configuration behaviour was intentionally changed. The server config is
-  still written to `<world>/serverconfig/svmm-config.toml`, with per-player configs under
-  `<world>/serverconfig/svmm-player-configs/`.
+  still written to `<world>/serverconfig/cleave-config.toml`, with per-player configs under
+  `<world>/serverconfig/cleave-player-configs/`.
 
 A mod for Minecraft which allows to instantly mine ore veins
 
@@ -46,6 +46,13 @@ It is not a rewrite and not a feature fork: behaviour, config keys and command s
 close to the original as each loader allows, so a config from the original carries over. If you
 are playing on Forge, use Tourmi's own releases — that is the supported build.
 
+### Name
+
+This fork is called **Cleave**. It was `svmm` while it was only a vein miner, and felling whole
+trees made that name wrong. The command root is `/cleave`; the old `/svmm` root is still
+registered as an alias, so existing command blocks and scripts keep working. The mod id, the
+config file names and the config root section moved with it.
+
 ## Features so far
 - When mining an ore block (the allowed blocks are configurable), all of its identical neighbors are also mined, recursively until there are no longer any blocks
 - Configurable maximum amount of blocks to destroy at once
@@ -53,3 +60,6 @@ are playing on Forge, use Tourmi's own releases — that is the supported build.
 - The appropriate tool must be equipped for vein mining to trigger
 - Vein mining applies all the enchantments of a tool, so Fortune, Silk Touch and Unbreaking all work properly
 - Giant veins may be mined all at once, if an appropriate ore block is mined next to other giant vein blocks (ex: tuff, raw ore blocks, etc)
+- Whole trees are felled when a log is broken with an axe, leaves included, on a block budget of its own
+- Configurable durability multiplier, so breaking in bulk can be made to cost more than mining by hand
+- Tunnelling, and a forced vein mine that ignores the ore whitelist for one block
