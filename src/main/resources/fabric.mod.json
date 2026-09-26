@@ -21,7 +21,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.tourmi.svmm.SVMM"
+      "io.github.firstwemine1.cleave.Cleave"
     ]
   },
   "depends": {

@@ -1,0 +1,101 @@
+package io.github.firstwemine1.cleave.commands;
+
+import com.mojang.brigadier.Command;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import io.github.firstwemine1.cleave.config.ClientConfig;
+import io.github.firstwemine1.cleave.utils.CommandUtils;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import io.github.firstwemine1.cleave.config.spec.ConfigSpec;
+
+import java.text.MessageFormat;
+
+public final class ToggleFeaturesCommand implements ICommand {
+    private final boolean disable;
+    private final String action;
+    private final String status;
+    private final String helpText;
+
+    public ToggleFeaturesCommand(boolean disable) {
+        this.disable = disable;
+        this.action = disable ? "disable" : "enable";
+        this.status = disable ? "disabled" : "enabled";
+
+        helpText = MessageFormat.format("""
+                - /cleave {0} [giantVein|tree]
+                    {0}s the mod or specific features for yourself
+                """, action);
+    }
+
+    @Override
+    public LiteralArgumentBuilder<CommandSourceStack> getCommand() {
+        return Commands.literal(action)
+                .requires(CommandPredicates::isPlayer)
+                .then(Commands.literal("giantVein")
+                        .requires(CommandPredicates::isGiantVeinMiningEnabled)
+                        .requires(CommandPredicates::canPlayerAccessGiantVeinMining)
+                        .executes(this::toggleGiantVein)) // /cleave disable|enable giantVein
+                .then(Commands.literal("tree")
+                        .requires(CommandPredicates::isTreeFellingEnabled)
+                        .requires(CommandPredicates::canPlayerAccessTreeFelling)
+                        .executes(this::toggleTree)) // /cleave disable|enable tree
+                .executes(this::toggle); // /cleave disable|enable
+    }
+
+    @Override
+    public String getHelpText(CommandContext<CommandSourceStack> cc) {
+        if (CommandUtils.isConsole(cc)) {
+            return "";
+        }
+
+        return helpText;
+    }
+
+    private int toggle(CommandContext<CommandSourceStack> commandContext) {
+        if (CommandUtils.isConsole(commandContext)) return 0;
+
+        ClientConfig cfg = CommandUtils.getSourceConfig(commandContext);
+        toggle(commandContext, cfg, cfg.MOD_DISABLED);
+
+        CommandUtils.sendMessage(commandContext, MessageFormat.format("Cleave is now {0}", status));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int toggleGiantVein(CommandContext<CommandSourceStack> commandContext) {
+        if (CommandUtils.isConsole(commandContext)) return 0;
+
+        ClientConfig cfg = CommandUtils.getSourceConfig(commandContext);
+        toggle(commandContext, cfg, cfg.GIANT_VEIN_MINING_DISABLED);
+
+        CommandUtils.sendMessage(commandContext, MessageFormat.format("Giant Vein Mining is now {0}", status));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private int toggleTree(CommandContext<CommandSourceStack> commandContext) {
+        if (CommandUtils.isConsole(commandContext)) return 0;
+
+        ClientConfig cfg = CommandUtils.getSourceConfig(commandContext);
+        toggle(commandContext, cfg, cfg.TREE_FELLING_DISABLED);
+
+        CommandUtils.sendMessage(commandContext, MessageFormat.format("Tree Felling is now {0}", status));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private void toggle(CommandContext<CommandSourceStack> cc, ClientConfig cfg, ConfigSpec.BooleanValue toggleFeature) {
+        toggleFeature.set(disable);
+
+        if (CommandUtils.isModerator(cc)) {
+            resetModeratorRestrictions(cc, cfg);
+        }
+
+        toggleFeature.save();
+    }
+
+    private void resetModeratorRestrictions(CommandContext<CommandSourceStack> cc, ClientConfig cfg) {
+        cfg.MOD_RESTRICTED.set(false);
+        cfg.GIANT_VEIN_MINING_RESTRICTED.set(false);
+
+        cfg.SPEC.save();
+    }
+}

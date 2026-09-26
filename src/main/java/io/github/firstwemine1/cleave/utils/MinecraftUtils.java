@@ -1,0 +1,118 @@
+package io.github.firstwemine1.cleave.utils;
+
+import io.github.firstwemine1.cleave.config.CleaveConfig;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Stream;
+
+public final class MinecraftUtils {
+    public static final HashMap<BlockPos, Player> BLOCKS_MINED = new HashMap<>();
+
+    public static Stream<String> getColorNames() {
+        return Stream.of(
+                "white",
+                "orange",
+                "magenta",
+                "light_blue",
+                "yellow",
+                "lime",
+                "pink",
+                "gray",
+                "light_gray",
+                "cyan",
+                "purple",
+                "blue",
+                "brown",
+                "green",
+                "red",
+                "black");
+    }
+
+    public static String getBlockName(BlockState bs) {
+        String stateString = bs.toString();
+        if (!stateString.contains("{") || !stateString.contains("}")) {
+            return stateString;
+        }
+        return stateString.substring(stateString.indexOf('{') + 1, stateString.indexOf('}'));
+    }
+
+    public static boolean isBlockInList(BlockState bs, List<? extends String> list) {
+        if (list.contains(MinecraftUtils.getBlockName(bs))) {
+            return true;
+        }
+        var tags = list.stream().filter((e) -> e.startsWith("#")).map(e -> e.substring(1)).toList();
+        return tags
+                .stream()
+                .map((t) -> TagKey.create(Registries.BLOCK, ResourceLocation.parse(t)))
+                .anyMatch(tag -> bs.is(tag));
+    }
+
+    public static void mineBlock(ServerLevel level, ServerPlayer player, BlockPos blockPos, ItemStack heldItem) {
+        if (level.isClientSide()) return;
+
+        var blockState = level.getBlockState(blockPos);
+        heldItem.mineBlock(level, blockState, blockPos, player);
+        applyExtraDurabilityCost(heldItem, blockState);
+        // Vanilla's playerDestroy drops the experience itself, through dropResources -> spawnAfterBreak,
+        // honouring Fortune and Silk Touch. Forge suppresses that and expects the caller to pop the
+        // experience separately, which is what the Forge branch's EnchantUtils was for.
+        blockState.getBlock().playerDestroy(level, player, blockPos, blockState, level.getBlockEntity(blockPos), heldItem);
+        level.removeBlock(blockPos, false);
+
+        if (CleaveConfig.TELEPORT_ITEMS_TO_PLAYER.get()) {
+            BLOCKS_MINED.put(blockPos, player);
+            level.getServer().execute(() -> {
+                BLOCKS_MINED.remove(blockPos);
+            });
+        }
+    }
+
+    public static void mineBlocks(ServerLevel level, ServerPlayer player, ItemStack heldItem, Collection<BlockPos> blocks) {
+        boolean letItemBreak = !CleaveConfig.STOP_WHEN_ABOUT_TO_BREAK.get();
+
+        for (BlockPos pos : blocks) {
+            if (shouldStopMining(letItemBreak, heldItem)) break;
+
+            mineBlock(level, player, pos, heldItem);
+        }
+    }
+
+    /**
+     * Vanilla's {@code mineBlock} already costs one durability point per block, so the mod is
+     * charged per block and not per vein. This adds the extra cost on top when the server wants
+     * vein mining to be more expensive than mining by hand.
+     * <p>
+     * Uses {@code getDamageValue}/{@code setDamageValue} rather than {@code hurtAndBreak}, whose
+     * signature differs across the Minecraft versions this mod is ported to. Breaking the tool is
+     * left to vanilla and to {@link #shouldStopMining}.
+     */
+    private static void applyExtraDurabilityCost(ItemStack item, BlockState blockState) {
+        int extra = CleaveConfig.DURABILITY_MULTIPLIER.get() - 1;
+        if (extra <= 0 || !item.isDamageableItem()) return;
+        // Vanilla only damages the tool for blocks that take time to break, so match that.
+        if (blockState.getDestroySpeed(null, null) == 0.0F) return;
+
+        item.setDamageValue(Math.min(item.getDamageValue() + extra, item.getMaxDamage()));
+    }
+
+    private static boolean shouldStopMining(boolean letItemBreak, ItemStack item) {
+        if (!letItemBreak && item.getMaxDamage() - item.getDamageValue() <= 2) {
+            return true;
+        }
+
+        return item.isEmpty();
+    }
+}
