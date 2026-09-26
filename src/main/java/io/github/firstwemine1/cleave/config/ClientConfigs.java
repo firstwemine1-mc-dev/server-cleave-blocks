@@ -1,0 +1,39 @@
+package io.github.firstwemine1.cleave.config;
+
+import io.github.firstwemine1.cleave.utils.ModUtils;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.storage.LevelResource;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.config.ConfigTracker;
+import net.minecraftforge.fml.config.ModConfig;
+
+import javax.annotation.Nullable;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.UUID;
+
+public final class ClientConfigs {
+    private final static HashMap<UUID, ClientConfig> clientConfigs = new HashMap<>();
+
+    public static ClientConfig getClientConfig(Entity player) {
+        if (!clientConfigs.containsKey(player.getUUID())) {
+            loadOrCreateClientConfig(player);
+        }
+
+        return clientConfigs.get(player.getUUID());
+    }
+
+    public static @Nullable ClientConfig getClientConfig(UUID uuid) {
+        return clientConfigs.getOrDefault(uuid, null);
+    }
+
+    private static void loadOrCreateClientConfig(Entity player) {
+        UUID playerUUID = player.getUUID();
+        ClientConfig cfg = new ClientConfig(playerUUID);
+        String configPath = "cleave-player-configs/" + playerUUID + ".toml";
+        ModUtils.RegisterConfig(cfg.SPEC, configPath);
+        Path serverConfig = player.getServer().getWorldPath(new LevelResource("serverconfig"));
+        ConfigTracker.INSTANCE.loadConfigs(ModConfig.Type.SERVER, serverConfig);
+        clientConfigs.put(playerUUID, cfg);
+    }
+}

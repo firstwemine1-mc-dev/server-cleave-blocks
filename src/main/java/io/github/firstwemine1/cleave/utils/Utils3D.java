@@ -1,0 +1,167 @@
+package io.github.firstwemine1.cleave.utils;
+
+import io.github.firstwemine1.cleave.config.CleaveConfig;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.*;
+import java.util.stream.Stream;
+
+public final class Utils3D {
+    public static Stream<BlockPos> getSameBlocksConnectedToPos(String blockName, BlockPos pos, Level level) {
+        return BlockPos.betweenClosedStream(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))
+                .filter(bpos -> !bpos.equals(pos) && MinecraftUtils.getBlockName(level.getBlockState(bpos)).equals(blockName));
+    }
+
+    public static Stream<BlockPos> getGiantVeinBlocksConnectedToPos(BlockPos pos, Level level, List<? extends String> whitelist, List<? extends String> blacklist) {
+        return BlockPos.betweenClosedStream(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))
+                .filter(bpos ->
+                        !bpos.equals(pos)
+                        && MinecraftUtils.isBlockInList(level.getBlockState(bpos), whitelist)
+                        && !MinecraftUtils.isBlockInList(level.getBlockState(bpos), blacklist));
+    }
+
+    public static Collection<BlockPos> getVeinBlocks(BlockState s, BlockPos p, Level l, int limit) {
+        HashSet<BlockPos> visitedBlocks = new HashSet<>();
+        HashSet<BlockPos> newPositions = new HashSet<>();
+        String blockName = MinecraftUtils.getBlockName(s);
+        newPositions.add(p);
+
+        while (!newPositions.isEmpty() && visitedBlocks.size() < limit) {
+            BlockPos currPos = newPositions.iterator().next();
+
+            if (visitedBlocks.size() + newPositions.size() < limit) {
+                Stream<BlockPos> potentialBlocks = getSameBlocksConnectedToPos(blockName, currPos, l);
+                newPositions.addAll(potentialBlocks.filter(pos -> !visitedBlocks.contains(pos)).map(BlockPos::immutable).toList());
+            }
+
+            visitedBlocks.add(currPos);
+            newPositions.remove(currPos);
+        }
+
+        return visitedBlocks;
+    }
+
+    /**
+     * Blocks belonging to the tree rooted at the broken log: every connected log, plus the leaves
+     * touching them when the server enables that. Logs join diagonally through branches, so the
+     * same 3x3x3 neighbourhood the vein miner uses is the right connectivity here too.
+     */
+    public static Collection<BlockPos> getTreeBlocks(BlockPos p, Level l, int limit) {
+        List<? extends String> logs = CleaveConfig.TREE_FELLING_LOG_WHITELIST.get();
+        List<? extends String> blacklist = CleaveConfig.TREE_FELLING_BLACKLIST.get();
+
+        HashSet<BlockPos> treeBlocks = new HashSet<>();
+        HashSet<BlockPos> newPositions = new HashSet<>();
+        newPositions.add(p);
+
+        while (!newPositions.isEmpty() && treeBlocks.size() < limit) {
+            BlockPos currPos = newPositions.iterator().next();
+
+            if (treeBlocks.size() + newPositions.size() < limit) {
+                newPositions.addAll(getMatchingBlocksConnectedToPos(currPos, l, logs, blacklist)
+                        .filter(pos -> !treeBlocks.contains(pos))
+                        .map(BlockPos::immutable)
+                        .toList());
+            }
+
+            treeBlocks.add(currPos);
+            newPositions.remove(currPos);
+        }
+
+        if (!CleaveConfig.TREE_FELLING_BREAK_LEAVES.get()) {
+            return treeBlocks;
+        }
+
+        List<? extends String> leaves = CleaveConfig.TREE_FELLING_LEAF_WHITELIST.get();
+        HashSet<BlockPos> withLeaves = new HashSet<>(treeBlocks);
+        for (BlockPos logPos : treeBlocks) {
+            if (withLeaves.size() >= limit) break;
+
+            for (BlockPos leafPos : getMatchingBlocksConnectedToPos(logPos, l, leaves, blacklist).map(BlockPos::immutable).toList()) {
+                if (withLeaves.size() >= limit) break;
+                withLeaves.add(leafPos);
+            }
+        }
+
+        return withLeaves;
+    }
+
+    private static Stream<BlockPos> getMatchingBlocksConnectedToPos(BlockPos pos, Level level, List<? extends String> whitelist, List<? extends String> blacklist) {
+        return BlockPos.betweenClosedStream(pos.offset(-1, -1, -1), pos.offset(1, 1, 1))
+                .filter(bpos -> !bpos.equals(pos))
+                .filter(bpos -> {
+                    BlockState state = level.getBlockState(bpos);
+                    return MinecraftUtils.isBlockInList(state, whitelist) && !MinecraftUtils.isBlockInList(state, blacklist);
+                });
+    }
+
+    public static Collection<BlockPos> getGiantVeinBlocks(BlockPos p, Level l, int limit) {
+        HashSet<BlockPos> visitedBlocks = new HashSet<>();
+        HashSet<BlockPos> newPositions = new HashSet<>();
+        newPositions.add(p);
+
+        while (!newPositions.isEmpty() && visitedBlocks.size() < limit) {
+            BlockPos currPos = newPositions.iterator().next();
+
+            if (visitedBlocks.size() + newPositions.size() < limit) {
+                Stream<BlockPos> potentialBlocks = getGiantVeinBlocksConnectedToPos(currPos, l, CleaveConfig.GIANT_VEIN_WHITELIST.get(), CleaveConfig.GIANT_VEIN_BLACKLIST.get());
+                newPositions.addAll(potentialBlocks.filter(pos -> !visitedBlocks.contains(pos)).map(BlockPos::immutable).toList());
+            }
+
+            visitedBlocks.add(currPos);
+            newPositions.remove(currPos);
+        }
+
+        return visitedBlocks;
+    }
+
+    public static Collection<BlockPos> getTunnelBlocks(BlockPos p, BlockState s, Level l, Direction f, int width, int height, int depth) {
+        return getTunnelBlocks(p, s, l, f, Direction.UP, Direction.DOWN, f.getClockWise(), f.getCounterClockWise(), width, height, depth);
+    }
+
+    private static Collection<BlockPos> getTunnelBlocks(BlockPos p, BlockState s, Level l, Direction blockFace, Direction upDir, Direction downDir, Direction leftDir, Direction rightDir, int width, int height, int depth) {
+        HashSet<BlockPos> blocks = new HashSet<>();
+        int upDist = (height - 1) / 2;
+        int downDist = height / 2;
+        int leftDist = (width - 1) / 2;
+        int rightDist = width / 2;
+        for (int i = 0; i < depth; i++) {
+            BlockPos currDepth = p.relative(blockFace.getOpposite(), i);
+            Stream<BlockPos> stream = BlockPos.betweenClosedStream(
+                    currDepth.relative(leftDir, leftDist).relative(upDir, upDist),
+                    currDepth.relative(rightDir, rightDist).relative(downDir, downDist));
+
+            if (CleaveConfig.TUNNELING_SAME_TYPE.get()) {
+                String blockName = MinecraftUtils.getBlockName(s);
+                stream = stream.filter(pos -> MinecraftUtils.getBlockName(l.getBlockState(pos)).equals(blockName));
+            } else {
+                stream = stream.filter(pos ->
+                        MinecraftUtils.isBlockInList(l.getBlockState(pos), CleaveConfig.TUNNELING_WHITELIST.get())
+                        && !MinecraftUtils.isBlockInList(l.getBlockState(pos), CleaveConfig.TUNNELING_BLACKLIST.get()));
+            }
+
+            List<BlockPos> res = stream.map(BlockPos::immutable).toList();
+            blocks.addAll(res);
+
+            if (res.isEmpty()) break;
+        }
+
+        return blocks;
+
+    }
+
+    public static Collection<BlockPos> getVerticalTunnelBlocks(BlockPos p, BlockState s, Level l, Direction playerDir, Direction f, int width, int height, int depth) {
+        Direction up = playerDir;
+        Direction down = playerDir.getOpposite();
+        Direction left = playerDir.getCounterClockWise();
+        Direction right = playerDir.getClockWise();
+        if (f.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
+            up = down;
+            down = playerDir;
+        }
+        return getTunnelBlocks(p, s, l, f, up, down, left, right, width, height, depth);
+    }
+}
